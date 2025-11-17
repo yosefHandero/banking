@@ -3,15 +3,19 @@ import { Inter, IBM_Plex_Serif } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable:'--font-inter' });
-const ibmPlexSerif = IBM_Plex_Serif({ subsets: ["latin"], weight:['400', '700'], variable:'--font-ibm-plex-serif'})
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const ibmPlexSerif = IBM_Plex_Serif({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-ibm-plex-serif",
+});
 
 export const metadata: Metadata = {
-  title: "Banking App",
+  title: "xyz",
   description: "A modern banking platform for managing your finances.",
   icons: {
-    icon:'/icons/logo.svg'
-  }
+    icon: "/icons/logo.svg",
+  },
 };
 
 export default function RootLayout({

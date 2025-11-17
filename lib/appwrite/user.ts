@@ -1,13 +1,15 @@
-import { account, databases, ID, COLLECTIONS, DATABASE_ID } from './config';
+import { account, databases, ID, Query, COLLECTIONS, DATABASE_ID, getAppwriteClient } from './config';
 import { User, SignUpParams } from '@/types';
 
 export async function createUserAccount(userData: SignUpParams) {
   try {
+    const { account: requestAccount, databases: requestDatabases } = getAppwriteClient();
+    
     // Create auth account
-    const user = await account.create(ID.unique(), userData.email, userData.password, userData.firstName + ' ' + userData.lastName);
+    const user = await requestAccount.create(ID.unique(), userData.email, userData.password, userData.firstName + ' ' + userData.lastName);
     
     // Create user document in database
-    const userDoc = await databases.createDocument(
+    const userDoc = await requestDatabases.createDocument(
       DATABASE_ID,
       COLLECTIONS.USERS,
       ID.unique(),
@@ -35,7 +37,8 @@ export async function createUserAccount(userData: SignUpParams) {
 
 export async function signInAccount(email: string, password: string) {
   try {
-    const session = await account.createEmailPasswordSession(email, password);
+    const { account: requestAccount } = getAppwriteClient();
+    const session = await requestAccount.createEmailPasswordSession(email, password);
     return session;
   } catch (error) {
     throw error;
@@ -44,7 +47,8 @@ export async function signInAccount(email: string, password: string) {
 
 export async function signOutAccount() {
   try {
-    await account.deleteSession('current');
+    const { account: requestAccount } = getAppwriteClient();
+    await requestAccount.deleteSession('current');
   } catch (error) {
     throw error;
   }
@@ -52,7 +56,8 @@ export async function signOutAccount() {
 
 export async function getCurrentUser() {
   try {
-    const currentAccount = await account.get();
+    const { account: requestAccount } = getAppwriteClient();
+    const currentAccount = await requestAccount.get();
     return currentAccount;
   } catch (error) {
     return null;
@@ -61,7 +66,8 @@ export async function getCurrentUser() {
 
 export async function getUserInfo(userId: string): Promise<User | null> {
   try {
-    const userDoc = await databases.listDocuments(
+    const { databases: requestDatabases } = getAppwriteClient();
+    const userDoc = await requestDatabases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.USERS,
       [Query.equal('userId', userId)]
