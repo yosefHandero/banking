@@ -1,16 +1,25 @@
+"use client";
+
+import { useEffect } from "react";
 import AuthForm from "@/components/AuthForm";
 import Image from "next/image";
 import { getCurrentUser } from "@/lib/appwrite/user";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default async function SignIn() {
-  // Check if user is already authenticated
-  const currentUser = await getCurrentUser();
+export default function SignIn() {
+  const router = useRouter();
 
-  if (currentUser) {
-    // User is already signed in, redirect to home
-    redirect("/");
-  }
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        // User is already signed in, redirect to home
+        router.replace("/");
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   return (
     <div className="flex h-screen w-full">

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 import { getAccounts } from '@/lib/appwrite/account';
 import { getTransactions } from '@/lib/appwrite/transaction';
@@ -8,24 +11,69 @@ import TotalBalanceBox from '@/components/TotalBalanceBox';
 import RecentTransactions from '@/components/RecentTransactions';
 import FinancialSummary from '@/components/FinancialSummary';
 import AIInsightsWidget from '@/components/AIInsightsWidget';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { User, Account, Transaction } from '@/types';
+import { Budget } from '@/lib/appwrite/budget';
+import { SavingsGoal } from '@/lib/appwrite/goals';
 
-export default async function Home() {
-  const currentUser = await getCurrentUser();
-  
-  if (!currentUser) {
-    redirect('/sign-in');
+export default function Home() {
+  const router = useRouter();
+  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        
+        if (!currentUser) {
+          router.replace('/sign-in');
+          return;
+        }
+
+        const user = await getUserInfo(currentUser.$id);
+        if (!user) {
+          router.replace('/sign-in');
+          return;
+        }
+
+        setUserInfo(user);
+
+        const [accountsData, transactionsData, budgetsData, goalsData] = await Promise.all([
+          getAccounts(user.userId),
+          getTransactions(user.userId),
+          getBudgets(user.userId),
+          getSavingsGoals(user.userId),
+        ]);
+
+        setAccounts(accountsData);
+        setTransactions(transactionsData);
+        setBudgets(budgetsData);
+        setGoals(goalsData);
+      } catch (error: any) {
+        console.error('Error loading data:', error);
+        // Only redirect if it's an auth error, not a data loading error
+        if (error?.message?.includes('Unauthorized') || error?.message?.includes('session')) {
+          router.replace('/sign-in');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [router]);
+
+  if (loading || !userInfo) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-16 text-gray-600">Loading...</p>
+      </div>
+    );
   }
-
-  const userInfo = await getUserInfo(currentUser.$id);
-  if (!userInfo) {
-    redirect('/sign-in');
-  }
-
-  const accounts = await getAccounts(userInfo.userId);
-  const transactions = await getTransactions(userInfo.userId);
-  const budgets = await getBudgets(userInfo.userId);
-  const goals = await getSavingsGoals(userInfo.userId);
 
   const totalCurrentBalance = accounts.reduce((sum, acc) => sum + acc.currentBalance, 0);
 

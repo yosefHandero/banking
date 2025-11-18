@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 
 interface AIInsightsWidgetProps {
-  userId: string;
+  userId: string; // Kept for backward compatibility but not used in API call
 }
 
 export default function AIInsightsWidget({ userId }: AIInsightsWidgetProps) {
@@ -15,15 +15,22 @@ export default function AIInsightsWidget({ userId }: AIInsightsWidgetProps) {
 
   useEffect(() => {
     loadSuggestions();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // No dependencies needed - API uses auth
 
   const loadSuggestions = async () => {
     try {
-      const response = await fetch(`/api/ai/suggestions?userId=${userId}`);
+      // API now uses authentication instead of userId query param
+      const response = await fetch('/api/ai/suggestions');
       const data = await response.json();
 
       if (response.ok) {
         setSuggestions(data.suggestions?.slice(0, 3) || []);
+      } else {
+        // Handle auth errors gracefully
+        if (response.status === 401) {
+          console.warn('Unauthorized: User not authenticated');
+        }
       }
     } catch (error) {
       console.error('Error loading suggestions:', error);

@@ -33,10 +33,15 @@ export default function AIInsightsPage() {
 
       setUserId(userInfo.userId);
 
-      const response = await fetch(`/api/ai/suggestions?userId=${userInfo.userId}`);
+      // API now uses authentication instead of userId query param
+      const response = await fetch('/api/ai/suggestions');
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/sign-in');
+          return;
+        }
         throw new Error(data.error || 'Failed to load suggestions');
       }
 
