@@ -27,18 +27,8 @@ export async function getAppwriteClient() {
   try {
     // Use dynamic import to avoid bundling cookies() in client components
     // In Next.js 15+, cookies() is async and must be awaited
-    // Wrap in a function to prevent bundler from analyzing this import
-    const cookiesModule = await import('next/headers').catch(() => null);
-    if (!cookiesModule) {
-      // If import fails, return default client
-      return {
-        client,
-        account,
-        databases,
-      };
-    }
-    
-    const cookieStore = await cookiesModule.cookies();
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
     const requestClient = new Client();
     requestClient
       .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_URL || 'https://cloud.appwrite.io/v1')
@@ -62,7 +52,6 @@ export async function getAppwriteClient() {
     };
   } catch (error) {
     // Fallback to default client if cookies() fails for any reason
-    console.warn('Failed to create server-side Appwrite client with cookies, using default client:', error);
     return {
       client,
       account,
@@ -77,16 +66,14 @@ export const databases = new Databases(client);
 export { client, ID, Query };
 
 // Database and Collection IDs
-// IMPORTANT: Replace these with your actual Appwrite Collection IDs from the Appwrite Console
-// To find Collection IDs: Appwrite Console > Databases > Your Database > Collections > Click on collection > Settings > Collection ID
 export const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'banking_db';
 export const COLLECTIONS = {
-  USERS: '66edc2d6002502837b8f', // ✅ Collection ID from Appwrite console
-  ACCOUNTS: process.env.NEXT_PUBLIC_APPWRITE_ACCOUNTS_COLLECTION_ID || 'accounts', // ⚠️ Replace with actual Collection ID
-  TRANSACTIONS: process.env.NEXT_PUBLIC_APPWRITE_TRANSACTIONS_COLLECTION_ID || 'transactions', // ⚠️ Replace with actual Collection ID
-  BUDGETS: process.env.NEXT_PUBLIC_APPWRITE_BUDGETS_COLLECTION_ID || 'budgets', // ⚠️ Replace with actual Collection ID
-  SAVINGS_GOALS: process.env.NEXT_PUBLIC_APPWRITE_SAVINGS_GOALS_COLLECTION_ID || 'savings_goals', // ⚠️ Replace with actual Collection ID
-  TRANSFERS: process.env.NEXT_PUBLIC_APPWRITE_TRANSFERS_COLLECTION_ID || 'transfers', // ⚠️ Replace with actual Collection ID
-  AI_SUGGESTIONS: process.env.NEXT_PUBLIC_APPWRITE_AI_SUGGESTIONS_COLLECTION_ID || 'ai_suggestions', // ⚠️ Replace with actual Collection ID
+  USERS: '66edc2d6002502837b8f', // Collection ID from Appwrite console
+  ACCOUNTS: 'accounts',
+  TRANSACTIONS: 'transactions',
+  BUDGETS: 'budgets',
+  SAVINGS_GOALS: 'savings_goals',
+  TRANSFERS: 'transfers',
+  AI_SUGGESTIONS: 'ai_suggestions',
 };
 

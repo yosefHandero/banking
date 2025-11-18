@@ -1,80 +1,41 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 import { getAccount } from '@/lib/appwrite/account';
 import { getTransactionsByBankId } from '@/lib/appwrite/transaction';
 import { formatAmount, formatDateTime } from '@/lib/utils';
 import HeaderBox from '@/components/HeaderBox';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { User, Account, Transaction } from '@/types';
 
 interface BankAccountPageProps {
   params: { id: string };
 }
 
-export default function BankAccountPage({ params }: BankAccountPageProps) {
-  const router = useRouter();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [account, setAccount] = useState<Account | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-        
-        if (!currentUser) {
-          router.replace('/sign-in');
-          return;
-        }
-
-        const user = await getUserInfo(currentUser.$id);
-        if (!user) {
-          router.replace('/sign-in');
-          return;
-        }
-
-        setUserInfo(user);
-
-        const accountData = await getAccount(params.id);
-        if (!accountData) {
-          router.replace('/my-banks');
-          return;
-        }
-
-        // CRITICAL SECURITY CHECK: Verify account belongs to user
-        if (accountData.userId !== user.userId) {
-          router.replace('/my-banks');
-          return;
-        }
-
-        setAccount(accountData);
-
-        // Pass userId for additional security filtering
-        const transactionsData = await getTransactionsByBankId(accountData.id, user.userId);
-        setTransactions(transactionsData);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        router.replace('/sign-in');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [router, params.id]);
-
-  if (loading || !userInfo || !account) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-16 text-gray-600">Loading...</p>
-      </div>
-    );
+export default async function BankAccountPage({ params }: BankAccountPageProps) {
+  const currentUser = await getCurrentUser();
+  
+  if (!currentUser) {
+    redirect('/sign-in');
   }
+
+  const userInfo = await getUserInfo(currentUser.$id);
+  if (!userInfo) {
+    redirect('/sign-in');
+  }
+
+  const account = await getAccount(params.id);
+  if (!account) {
+    redirect('/my-banks');
+  }
+
+  // CRITICAL SECURITY CHECK: Verify account belongs to user
+  if (account.userId !== userInfo.userId) {
+    redirect('/my-banks');
+  }
+
+  // Pass userId for additional security filtering
+  const transactions = await getTransactionsByBankId(account.id, userInfo.userId);
 
   return (
     <div className="flex flex-col gap-8 p-8">
