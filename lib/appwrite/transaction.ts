@@ -1,4 +1,4 @@
-import { databases, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
 import { Transaction } from '@/types';
 
 export async function createTransaction(transactionData: {
@@ -17,6 +17,7 @@ export async function createTransaction(transactionData: {
   receiverBankId?: string;
 }) {
   try {
+    const { databases } = await getAppwriteClient();
     const transaction = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.TRANSACTIONS,
@@ -46,17 +47,19 @@ export async function createTransaction(transactionData: {
 
 export async function getTransactions(userId: string, accountId?: string): Promise<Transaction[]> {
   try {
+    const { databases } = await getAppwriteClient();
     const queries = [Query.equal('userId', userId)];
     
     if (accountId) {
       queries.push(Query.equal('accountId', accountId));
     }
+    
+    queries.push(Query.orderDesc('date'));
 
     const transactions = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.TRANSACTIONS,
-      queries,
-      [Query.orderDesc('date')]
+      queries
     );
 
     return transactions.documents.map((doc) => ({
@@ -82,13 +85,23 @@ export async function getTransactions(userId: string, accountId?: string): Promi
   }
 }
 
-export async function getTransactionsByBankId(bankId: string): Promise<Transaction[]> {
+export async function getTransactionsByBankId(bankId: string, userId?: string): Promise<Transaction[]> {
   try {
+    const { databases } = await getAppwriteClient();
+    const queries = [
+      Query.equal('accountId', bankId),
+      Query.orderDesc('date')
+    ];
+    
+    // SECURITY: Filter by userId if provided to ensure users can only see their own transactions
+    if (userId) {
+      queries.unshift(Query.equal('userId', userId));
+    }
+    
     const transactions = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.TRANSACTIONS,
-      [Query.equal('accountId', bankId)],
-      [Query.orderDesc('date')]
+      queries
     );
 
     return transactions.documents.map((doc) => ({

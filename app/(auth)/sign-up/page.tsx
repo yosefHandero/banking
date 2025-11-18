@@ -1,7 +1,17 @@
-import AuthForm from '@/components/AuthForm'
-import Image from 'next/image'
+import AuthForm from "@/components/AuthForm";
+import Image from "next/image";
+import { getCurrentUser } from "@/lib/appwrite/user";
+import { redirect } from "next/navigation";
 
-export default function SignUp() {
+export default async function SignUp() {
+  // Check if user is already authenticated
+  const currentUser = await getCurrentUser();
+
+  if (currentUser) {
+    // User is already signed in, redirect to home
+    redirect("/");
+  }
+
   return (
     <div className="flex h-screen w-full">
       <section className="auth-form">
@@ -25,5 +35,5 @@ export default function SignUp() {
         />
       </section>
     </div>
-  )
+  );
 }

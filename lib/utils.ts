@@ -2,6 +2,7 @@
 import { type ClassValue, clsx } from "clsx";
 import qs from "query-string";
 import { twMerge } from "tailwind-merge";
+import { AccountTypes, Transaction, CategoryCount } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -85,16 +86,20 @@ interface UrlQueryParams {
   params: string;
   key: string;
   value: string;
+  pathname?: string;
 }
 
-export function formUrlQuery({ params, key, value }: UrlQueryParams) {
+export function formUrlQuery({ params, key, value, pathname }: UrlQueryParams) {
   const currentUrl = qs.parse(params);
 
   currentUrl[key] = value;
 
+  // Use provided pathname or check if window exists (client-side only)
+  const url = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
+
   return qs.stringifyUrl(
     {
-      url: window.location.pathname,
+      url,
       query: currentUrl,
     },
     { skipNull: true }

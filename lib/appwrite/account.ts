@@ -1,4 +1,4 @@
-import { databases, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
 import { Account } from '@/types';
 
 export async function createBankAccount(accountData: {
@@ -14,6 +14,7 @@ export async function createBankAccount(accountData: {
   institutionName: string;
 }) {
   try {
+    const { databases } = await getAppwriteClient();
     const account = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,
@@ -42,6 +43,7 @@ export async function createBankAccount(accountData: {
 
 export async function getAccounts(userId: string): Promise<Account[]> {
   try {
+    const { databases } = await getAppwriteClient();
     const accounts = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,
@@ -60,6 +62,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       subtype: doc.subtype,
       appwriteItemId: doc.appwriteItemId,
       sharableId: doc.sharableId,
+      userId: doc.userId,
     }));
   } catch (error) {
     console.error('Error getting accounts:', error);
@@ -69,6 +72,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
 
 export async function getAccount(accountId: string): Promise<Account | null> {
   try {
+    const { databases } = await getAppwriteClient();
     const account = await databases.getDocument(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,
@@ -87,6 +91,7 @@ export async function getAccount(accountId: string): Promise<Account | null> {
       subtype: account.subtype,
       appwriteItemId: account.appwriteItemId,
       sharableId: account.sharableId,
+      userId: account.userId,
     };
   } catch (error) {
     console.error('Error getting account:', error);
@@ -94,8 +99,22 @@ export async function getAccount(accountId: string): Promise<Account | null> {
   }
 }
 
-export async function deleteBankAccount(accountId: string) {
+export async function deleteBankAccount(accountId: string, userId?: string) {
   try {
+    const { databases } = await getAppwriteClient();
+    
+    // SECURITY: Verify ownership if userId is provided
+    if (userId) {
+      const account = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.ACCOUNTS,
+        accountId
+      );
+      if (account.userId !== userId) {
+        throw new Error('Unauthorized: Account does not belong to you');
+      }
+    }
+    
     await databases.deleteDocument(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,
@@ -106,8 +125,22 @@ export async function deleteBankAccount(accountId: string) {
   }
 }
 
-export async function updateAccountBalance(accountId: string, currentBalance: number, availableBalance: number) {
+export async function updateAccountBalance(accountId: string, currentBalance: number, availableBalance: number, userId?: string) {
   try {
+    const { databases } = await getAppwriteClient();
+    
+    // SECURITY: Verify ownership if userId is provided
+    if (userId) {
+      const account = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.ACCOUNTS,
+        accountId
+      );
+      if (account.userId !== userId) {
+        throw new Error('Unauthorized: Account does not belong to you');
+      }
+    }
+    
     await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,

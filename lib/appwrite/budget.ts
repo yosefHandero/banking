@@ -1,4 +1,4 @@
-import { databases, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
 
 export interface Budget {
   $id: string;
@@ -20,6 +20,7 @@ export async function createBudget(budgetData: {
   year: number;
 }) {
   try {
+    const { databases } = await getAppwriteClient();
     const budget = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
@@ -43,6 +44,7 @@ export async function createBudget(budgetData: {
 
 export async function getBudgets(userId: string, year?: number, month?: number): Promise<Budget[]> {
   try {
+    const { databases } = await getAppwriteClient();
     const queries = [Query.equal('userId', userId)];
     
     if (year) {
@@ -75,8 +77,22 @@ export async function getBudgets(userId: string, year?: number, month?: number):
   }
 }
 
-export async function updateBudgetSpending(budgetId: string, currentSpending: number) {
+export async function updateBudgetSpending(budgetId: string, currentSpending: number, userId?: string) {
   try {
+    const { databases } = await getAppwriteClient();
+    
+    // SECURITY: Verify ownership if userId is provided
+    if (userId) {
+      const budget = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.BUDGETS,
+        budgetId
+      );
+      if (budget.userId !== userId) {
+        throw new Error('Unauthorized: Budget does not belong to you');
+      }
+    }
+    
     await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
@@ -90,8 +106,22 @@ export async function updateBudgetSpending(budgetId: string, currentSpending: nu
   }
 }
 
-export async function deleteBudget(budgetId: string) {
+export async function deleteBudget(budgetId: string, userId?: string) {
   try {
+    const { databases } = await getAppwriteClient();
+    
+    // SECURITY: Verify ownership if userId is provided
+    if (userId) {
+      const budget = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.BUDGETS,
+        budgetId
+      );
+      if (budget.userId !== userId) {
+        throw new Error('Unauthorized: Budget does not belong to you');
+      }
+    }
+    
     await databases.deleteDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,

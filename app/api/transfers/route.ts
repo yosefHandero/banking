@@ -2,14 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAccount, updateAccountBalance } from '@/lib/appwrite/account';
 import { createTransaction } from '@/lib/appwrite/transaction';
 import { createMockTransfer, processMockTransfer } from '@/lib/mock/transfers';
+import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 import { format } from 'date-fns';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, fromAccountId, toAccountId, amount, description } = body;
+    // Verify authentication
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
-    if (!userId || !fromAccountId || !toAccountId || !amount) {
+    const userInfo = await getUserInfo(currentUser.$id);
+    if (!userInfo) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json();
+    const { fromAccountId, toAccountId, amount, description } = body;
+
+    if (!fromAccountId || !toAccountId || !amount) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -34,6 +52,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify account ownership - CRITICAL SECURITY CHECK
+    if (fromAccount.userId !== userInfo.userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Source account does not belong to you' },
+        { status: 403 }
+      );
+    }
+
+    if (toAccount.userId !== userInfo.userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Destination account does not belong to you' },
+        { status: 403 }
+      );
+    }
+
     if (amount > fromAccount.availableBalance) {
       return NextResponse.json(
         { error: 'Insufficient funds' },
@@ -43,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Create mock transfer
     const transfer = createMockTransfer({
-      userId,
+      userId: userInfo.userId,
       fromAccountId,
       toAccountId,
       amount,
@@ -60,17 +93,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update account balances
+    // Update account balances (with userId verification for security)
     await updateAccountBalance(
       fromAccountId,
       fromAccount.currentBalance - amount,
-      fromAccount.availableBalance - amount
+      fromAccount.availableBalance - amount,
+      userInfo.userId
     );
 
     await updateAccountBalance(
       toAccountId,
       toAccount.currentBalance + amount,
-      toAccount.availableBalance + amount
+      toAccount.availableBalance + amount,
+      userInfo.userId
     );
 
     // Create transaction records
@@ -78,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // Outgoing transaction
     await createTransaction({
-      userId,
+      userId: userInfo.userId,
       accountId: fromAccountId,
       name: `Transfer to ${toAccount.name}`,
       amount: -amount,
@@ -94,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Incoming transaction
     await createTransaction({
-      userId,
+      userId: userInfo.userId,
       accountId: toAccountId,
       name: `Transfer from ${fromAccount.name}`,
       amount: amount,

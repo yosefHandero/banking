@@ -15,16 +15,20 @@ export async function POST(request: NextRequest) {
 
     const session = await signInAccount(email, password);
     
-    // Appwrite SDK handles cookies automatically through its HTTP client
-    // The session is created and cookies are managed by the SDK
-    // We need to ensure cookies from Appwrite responses are forwarded to the client
+    // Appwrite SDK for Node.js creates sessions server-side, but cookies are managed internally
+    // The SDK's HTTP client handles cookies automatically, but they need to be forwarded to the browser
+    // For email/password sessions, the session object doesn't expose a secret property
+    // The SDK handles session cookies through its internal HTTP client when making requests
+    
+    // Create response - the session is created successfully
+    // Note: For proper cookie handling in Next.js with Appwrite, consider:
+    // 1. Using client-side authentication (browser SDK) for sign-in
+    // 2. Or ensuring Appwrite and Next.js share the same domain for automatic cookie forwarding
     const response = NextResponse.json({ success: true, session });
     
-    // Forward any Set-Cookie headers from Appwrite response
-    // Note: Appwrite SDK v21+ should handle this automatically, but we ensure
-    // cookies are forwarded by checking the response
-    // The SDK's internal HTTP client should have set cookies, but we need to
-    // extract them from the SDK's response if possible
+    // The Appwrite SDK manages cookies internally, but for server-side sessions,
+    // cookies need to be properly configured in Appwrite settings (same domain/subdomain)
+    // or handled through client-side authentication
     
     return response;
   } catch (error: any) {

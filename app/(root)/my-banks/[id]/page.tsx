@@ -29,7 +29,13 @@ export default async function BankAccountPage({ params }: BankAccountPageProps) 
     redirect('/my-banks');
   }
 
-  const transactions = await getTransactionsByBankId(account.id);
+  // CRITICAL SECURITY CHECK: Verify account belongs to user
+  if (account.userId !== userInfo.userId) {
+    redirect('/my-banks');
+  }
+
+  // Pass userId for additional security filtering
+  const transactions = await getTransactionsByBankId(account.id, userInfo.userId);
 
   return (
     <div className="flex flex-col gap-8 p-8">

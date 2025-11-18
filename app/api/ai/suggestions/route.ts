@@ -4,20 +4,32 @@ import { getTransactions } from '@/lib/appwrite/transaction';
 import { getBudgets } from '@/lib/appwrite/budget';
 import { getSavingsGoals } from '@/lib/appwrite/goals';
 import { getAccounts } from '@/lib/appwrite/account';
+import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    // Verify authentication
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const transactions = await getTransactions(userId);
-    const budgets = await getBudgets(userId);
-    const goals = await getSavingsGoals(userId);
-    const accounts = await getAccounts(userId);
+    const userInfo = await getUserInfo(currentUser.$id);
+    if (!userInfo) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Use authenticated user's ID instead of accepting from query params
+    const transactions = await getTransactions(userInfo.userId);
+    const budgets = await getBudgets(userInfo.userId);
+    const goals = await getSavingsGoals(userInfo.userId);
+    const accounts = await getAccounts(userInfo.userId);
     const totalBalance = accounts.reduce((sum, acc) => sum + acc.currentBalance, 0);
 
     const suggestions = await getFinancialSuggestions(transactions, budgets, goals, totalBalance);

@@ -93,7 +93,19 @@ export default function SavingsGoalsPage() {
 
   const handleUpdate = async (goalId: string, newAmount: number) => {
     try {
-      await updateSavingsGoal(goalId, { currentAmount: newAmount });
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        router.push("/sign-in");
+        return;
+      }
+
+      const userInfo = await getUserInfo(currentUser.$id);
+      if (!userInfo) {
+        router.push("/sign-in");
+        return;
+      }
+
+      await updateSavingsGoal(goalId, { currentAmount: newAmount }, userInfo.userId);
       toast.success("Goal updated successfully!");
       loadGoals();
     } catch (error: any) {
@@ -103,7 +115,19 @@ export default function SavingsGoalsPage() {
 
   const handleDelete = async (goalId: string) => {
     try {
-      await deleteSavingsGoal(goalId);
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        router.push("/sign-in");
+        return;
+      }
+
+      const userInfo = await getUserInfo(currentUser.$id);
+      if (!userInfo) {
+        router.push("/sign-in");
+        return;
+      }
+
+      await deleteSavingsGoal(goalId, userInfo.userId);
       toast.success("Goal deleted successfully!");
       loadGoals();
     } catch (error: any) {

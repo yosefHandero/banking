@@ -108,7 +108,19 @@ export default function BudgetPage() {
 
   const handleDelete = async (budgetId: string) => {
     try {
-      await deleteBudget(budgetId);
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        router.push('/sign-in');
+        return;
+      }
+
+      const userInfo = await getUserInfo(currentUser.$id);
+      if (!userInfo) {
+        router.push('/sign-in');
+        return;
+      }
+
+      await deleteBudget(budgetId, userInfo.userId);
       toast.success('Budget deleted successfully!');
       loadBudgets();
     } catch (error: any) {
