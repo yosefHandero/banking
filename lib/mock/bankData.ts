@@ -13,22 +13,25 @@ const ACCOUNT_SUBTYPES = ['checking', 'savings', 'credit card', 'mortgage', 'inv
 
 export function generateMockBankAccount(userId: string, bankIndex: number = 0): Omit<Account, 'id' | 'appwriteItemId' | 'sharableId'> {
   const bank = BANKS[bankIndex % BANKS.length];
-  const type = ACCOUNT_TYPES[Math.floor(Math.random() * ACCOUNT_TYPES.length)];
-  const subtype = ACCOUNT_SUBTYPES[Math.floor(Math.random() * ACCOUNT_SUBTYPES.length)];
-  
-  // Generate realistic balance based on account type
+  // Use bankIndex to deterministically select type and subtype
+  const type = ACCOUNT_TYPES[bankIndex % ACCOUNT_TYPES.length];
+  const subtype = ACCOUNT_SUBTYPES[bankIndex % ACCOUNT_SUBTYPES.length];
+
+  // Generate deterministic balance based on account type and index
   let balance = 0;
+  const seed = (bankIndex + 1) * 12345; // Simple seed
+
   if (type === 'depository') {
-    balance = Math.random() * 50000 + 1000; // $1,000 - $51,000
+    balance = (seed % 50000) + 1000;
   } else if (type === 'credit') {
-    balance = -(Math.random() * 10000 + 500); // -$500 to -$10,500 (credit card debt)
+    balance = -((seed % 10000) + 500);
   } else if (type === 'loan') {
-    balance = -(Math.random() * 200000 + 10000); // -$10,000 to -$210,000
+    balance = -((seed % 200000) + 10000);
   } else {
-    balance = Math.random() * 100000 + 5000; // $5,000 - $105,000
+    balance = (seed % 100000) + 5000;
   }
 
-  const mask = String(Math.floor(Math.random() * 9000) + 1000); // 4-digit mask
+  const mask = String((seed % 9000) + 1000); // 4-digit mask
 
   return {
     name: `${bank.name} ${subtype.charAt(0).toUpperCase() + subtype.slice(1)}`,
@@ -37,16 +40,17 @@ export function generateMockBankAccount(userId: string, bankIndex: number = 0): 
     type,
     subtype,
     currentBalance: Math.round(balance * 100) / 100,
-    availableBalance: type === 'credit' 
+    availableBalance: type === 'credit'
       ? Math.round((Math.abs(balance) * 0.3) * 100) / 100 // 30% credit available
       : Math.round(balance * 100) / 100,
     institutionId: bank.id,
+    userId,
   };
 }
 
 export function generateMockBankAccounts(userId: string, count: number = 3): Omit<Account, 'id' | 'appwriteItemId' | 'sharableId'>[] {
   const accounts: Omit<Account, 'id' | 'appwriteItemId' | 'sharableId'>[] = [];
-  
+
   for (let i = 0; i < count; i++) {
     accounts.push(generateMockBankAccount(userId, i));
   }

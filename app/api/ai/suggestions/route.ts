@@ -8,7 +8,6 @@ import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json(
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Use authenticated user's ID instead of accepting from query params
     const transactions = await getTransactions(userInfo.userId);
     const budgets = await getBudgets(userInfo.userId);
     const goals = await getSavingsGoals(userInfo.userId);

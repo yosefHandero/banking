@@ -11,7 +11,6 @@ export default function AIInsightsPage() {
   const router = useRouter();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSuggestions();
@@ -31,9 +30,7 @@ export default function AIInsightsPage() {
         return;
       }
 
-      setUserId(userInfo.userId);
-
-      const response = await fetch(`/api/ai/suggestions?userId=${userInfo.userId}`);
+      const response = await fetch(`/api/ai/suggestions`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -82,7 +79,7 @@ export default function AIInsightsPage() {
 
         <div className="flex flex-col gap-4">
           <h2 className="text-20 font-semibold text-gray-900">Chat with AI</h2>
-          {userId && <AIChat userId={userId} />}
+          <AIChat />
         </div>
       </div>
     </div>

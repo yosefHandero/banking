@@ -19,10 +19,9 @@ const transferSchema = z.object({
 
 interface PaymentTransferFormProps {
   accounts: Account[];
-  userId: string;
 }
 
-export default function PaymentTransferForm({ accounts, userId }: PaymentTransferFormProps) {
+export default function PaymentTransferForm({ accounts }: PaymentTransferFormProps) {
   const router = useRouter();
   const [isTransferring, setIsTransferring] = useState(false);
   const {
@@ -57,7 +56,6 @@ export default function PaymentTransferForm({ accounts, userId }: PaymentTransfe
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           fromAccountId: data.fromAccountId,
           toAccountId: data.toAccountId,
           amount: data.amount,

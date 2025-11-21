@@ -1,4 +1,7 @@
-import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+"use server";
+
+import { createSessionClient } from './server';
+import { ID, Query, COLLECTIONS, DATABASE_ID } from './config';
 import { Transaction } from '@/types';
 
 export async function createTransaction(transactionData: {
@@ -17,25 +20,21 @@ export async function createTransaction(transactionData: {
   receiverBankId?: string;
 }) {
   try {
-    const { databases } = await getAppwriteClient();
+    const { databases } = await createSessionClient();
     const transaction = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.TRANSACTIONS,
       ID.unique(),
       {
-        userId: transactionData.userId,
-        accountId: transactionData.accountId,
         name: transactionData.name,
-        amount: transactionData.amount,
-        type: transactionData.type,
-        category: transactionData.category,
-        paymentChannel: transactionData.paymentChannel,
-        date: transactionData.date,
-        pending: transactionData.pending,
-        image: transactionData.image || '',
+        amount: String(transactionData.amount),
         channel: transactionData.channel || transactionData.paymentChannel,
-        senderBankId: transactionData.senderBankId || '',
+        category: transactionData.category,
+        senderId: transactionData.userId,
+        receiverId: transactionData.userId,
+        senderBankId: transactionData.senderBankId || transactionData.accountId || '',
         receiverBankId: transactionData.receiverBankId || '',
+        email: '',
       }
     );
 
@@ -47,14 +46,29 @@ export async function createTransaction(transactionData: {
 
 export async function getTransactions(userId: string, accountId?: string): Promise<Transaction[]> {
   try {
-    const { databases } = await getAppwriteClient();
-    const queries = [Query.equal('userId', userId)];
-    
-    if (accountId) {
-      queries.push(Query.equal('accountId', accountId));
+    if (!userId || typeof userId !== 'string') {
+      console.error('Invalid userId provided to getTransactions:', userId);
+      return [];
     }
-    
-    queries.push(Query.orderDesc('date'));
+
+    const { databases } = await createSessionClient();
+    const queries = [
+      Query.or([
+        Query.equal('senderId', userId),
+        Query.equal('receiverId', userId)
+      ])
+    ];
+
+    if (accountId) {
+      queries.push(
+        Query.or([
+          Query.equal('senderBankId', accountId),
+          Query.equal('receiverBankId', accountId)
+        ])
+      );
+    }
+
+    queries.push(Query.orderDesc('$createdAt'));
 
     const transactions = await databases.listDocuments(
       DATABASE_ID,
@@ -62,20 +76,20 @@ export async function getTransactions(userId: string, accountId?: string): Promi
       queries
     );
 
-    return transactions.documents.map((doc) => ({
+    return transactions.documents.map((doc: any) => ({
       id: doc.$id,
       $id: doc.$id,
-      name: doc.name,
-      paymentChannel: doc.paymentChannel,
-      type: doc.type,
-      accountId: doc.accountId,
-      amount: doc.amount,
-      pending: doc.pending,
-      category: doc.category,
-      date: doc.date,
-      image: doc.image || '',
+      name: doc.name || '',
+      paymentChannel: doc.channel || '',
+      type: 'transfer',
+      accountId: doc.senderBankId || doc.receiverBankId || '',
+      amount: parseFloat(doc.amount) || 0,
+      pending: false,
+      category: doc.category || '',
+      date: doc.$createdAt || new Date().toISOString(),
+      image: '',
       $createdAt: doc.$createdAt,
-      channel: doc.channel || doc.paymentChannel,
+      channel: doc.channel || '',
       senderBankId: doc.senderBankId || '',
       receiverBankId: doc.receiverBankId || '',
     }));
@@ -87,37 +101,44 @@ export async function getTransactions(userId: string, accountId?: string): Promi
 
 export async function getTransactionsByBankId(bankId: string, userId?: string): Promise<Transaction[]> {
   try {
-    const { databases } = await getAppwriteClient();
+    const { databases } = await createSessionClient();
     const queries = [
-      Query.equal('accountId', bankId),
-      Query.orderDesc('date')
+      Query.or([
+        Query.equal('senderBankId', bankId),
+        Query.equal('receiverBankId', bankId)
+      ]),
+      Query.orderDesc('$createdAt')
     ];
-    
-    // SECURITY: Filter by userId if provided to ensure users can only see their own transactions
+
     if (userId) {
-      queries.unshift(Query.equal('userId', userId));
+      queries.unshift(
+        Query.or([
+          Query.equal('senderId', userId),
+          Query.equal('receiverId', userId)
+        ])
+      );
     }
-    
+
     const transactions = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.TRANSACTIONS,
       queries
     );
 
-    return transactions.documents.map((doc) => ({
+    return transactions.documents.map((doc: any) => ({
       id: doc.$id,
       $id: doc.$id,
-      name: doc.name,
-      paymentChannel: doc.paymentChannel,
-      type: doc.type,
-      accountId: doc.accountId,
-      amount: doc.amount,
-      pending: doc.pending,
-      category: doc.category,
-      date: doc.date,
-      image: doc.image || '',
+      name: doc.name || '',
+      paymentChannel: doc.channel || '',
+      type: 'transfer',
+      accountId: doc.senderBankId || doc.receiverBankId || '',
+      amount: parseFloat(doc.amount) || 0,
+      pending: false,
+      category: doc.category || '',
+      date: doc.$createdAt || new Date().toISOString(),
+      image: '',
       $createdAt: doc.$createdAt,
-      channel: doc.channel || doc.paymentChannel,
+      channel: doc.channel || '',
       senderBankId: doc.senderBankId || '',
       receiverBankId: doc.receiverBankId || '',
     }));

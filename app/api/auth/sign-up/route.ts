@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, user: result.user });
   } catch (error: any) {
-    // Check if it's a collection error
     if (error.message && error.message.includes('Collection')) {
       return NextResponse.json(
         { 

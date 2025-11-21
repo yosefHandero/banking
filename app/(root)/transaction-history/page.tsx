@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 import { getTransactions } from '@/lib/appwrite/transaction';
 import { Transaction } from '@/types';
+import { generateMockTransactions } from '@/lib/mock/transactions';
 import HeaderBox from '@/components/HeaderBox';
 import TransactionCard from '@/components/TransactionCard';
 import TransactionFilters from '@/components/TransactionFilters';
@@ -44,7 +45,20 @@ export default function TransactionHistoryPage() {
       }
 
       const allTransactions = await getTransactions(userInfo.userId);
-      setTransactions(allTransactions);
+      
+      if (allTransactions.length === 0) {
+        const generatedTransactions = generateMockTransactions(userInfo.userId, 'mock-1', 20);
+        const mockTransactions: Transaction[] = generatedTransactions.map((tx: any, index: number) => ({
+          ...tx,
+          id: `tx-${index + 1}`,
+          $id: `tx-${index + 1}`,
+          $createdAt: new Date().toISOString(),
+          paymentChannelType: 'online'
+        }));
+        setTransactions(mockTransactions);
+      } else {
+        setTransactions(allTransactions);
+      }
     } catch (error) {
       console.error('Error loading transactions:', error);
     } finally {

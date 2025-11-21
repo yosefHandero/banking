@@ -7,7 +7,6 @@ import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json(
@@ -34,13 +33,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use authenticated user's ID instead of accepting from request
     const transactions = await getTransactions(userInfo.userId);
     const budgets = await getBudgets(userInfo.userId);
     const goals = await getSavingsGoals(userInfo.userId);
 
     const response = await chatWithAI(question, {
-      transactions: transactions.slice(0, 10), // Recent transactions
+      transactions: transactions.slice(0, 10),
       budgets,
       goals,
     });

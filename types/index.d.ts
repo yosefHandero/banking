@@ -6,8 +6,6 @@ export type SearchParamProps = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
-// ========================================
-
 export type SignUpParams = {
   firstName: string;
   lastName: string;
@@ -255,7 +253,6 @@ export interface PaymentTransferFormProps {
   accounts: Account[];
 }
 
-// Actions
 export interface getAccountsProps {
   userId: string;
 }
@@ -273,10 +270,10 @@ export interface getTransactionsProps {
 }
 
 export interface CreateFundingSourceOptions {
-  customerId: string; // Dwolla Customer ID
-  fundingSourceName: string; // Dwolla Funding Source Name
-  plaidToken: string; // Plaid Account Processor Token
-  _links: object; // Dwolla On Demand Authorization Link
+  customerId: string;
+  fundingSourceName: string;
+  plaidToken: string;
+  _links: object;
 }
 
 export interface CreateTransactionProps {

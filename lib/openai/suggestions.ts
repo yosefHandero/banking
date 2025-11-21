@@ -14,7 +14,6 @@ export async function getFinancialSuggestions(
   totalBalance: number
 ): Promise<string[]> {
   if (!process.env.OPENAI_API_KEY) {
-    // Return mock suggestions if API key is not configured
     return [
       'Consider setting up automatic transfers to your savings account each month.',
       'Your spending on dining out has increased this month. Consider meal planning to save money.',
@@ -59,14 +58,12 @@ Provide 5 concise, actionable financial tips. Format as a JSON array of strings.
 
     const response = completion.choices[0]?.message?.content || '';
     
-    // Try to parse JSON response
     try {
       const parsed = JSON.parse(response);
       if (Array.isArray(parsed)) {
         return parsed;
       }
     } catch {
-      // If not JSON, split by lines or return as single suggestion
       return response.split('\n').filter((line) => line.trim().length > 0).slice(0, 5);
     }
 

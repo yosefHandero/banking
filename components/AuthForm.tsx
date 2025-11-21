@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Client, Account } from "appwrite";
+import { signInAccount, createUserAccount } from "@/lib/appwrite/user";
 
 const signUpSchema = z.object({
   firstName: z
@@ -58,128 +58,34 @@ export default function AuthForm({ type }: AuthFormProps) {
     setIsLoading(true);
     try {
       if (type === "sign-in") {
-        // Use client-side authentication for sign-in to ensure cookies are set properly
-        const client = new Client();
-        client
-          .setEndpoint(
-            process.env.NEXT_PUBLIC_APPWRITE_URL ||
-              "https://cloud.appwrite.io/v1"
-          )
-          .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "");
-
-        const account = new Account(client);
-
-        try {
-          await account.createEmailPasswordSession({
-            email: data.email,
-            password: data.password,
-          });
+        const response = await signInAccount(data.email, data.password);
+        if (response) {
           toast.success("Signed in successfully!");
-        } catch (sessionError: any) {
-          // If session already exists, we're already authenticated - just redirect
-          if (
-            sessionError.message &&
-            sessionError.message.includes("session is active")
-          ) {
-            // Verify we have a valid session
-            try {
-              await account.get();
-              // Session is valid - silently redirect without showing message
-            } catch (getError) {
-              // Session exists but invalid - delete and recreate
-              await account.deleteSession({ sessionId: "current" });
-              await account.createEmailPasswordSession({
-                email: data.email,
-                password: data.password,
-              });
-              toast.success("Signed in successfully!");
-            }
-          } else {
-            throw sessionError;
-          }
+          router.push("/");
+        } else {
+          toast.error("Failed to sign in. Please check your credentials.");
         }
-
-        // Small delay to ensure cookies are set before redirect
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // Use router for navigation
-        router.push("/");
-        router.refresh();
       } else {
-        // Sign-up: Use API route to create account and database document
-        const response = await fetch("/api/auth/sign-up", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
+        const userData = {
+          firstName: data.firstName!,
+          lastName: data.lastName!,
+          address1: data.address1!,
+          city: data.city!,
+          state: data.state!,
+          postalCode: data.postalCode!,
+          dateOfBirth: data.dateOfBirth!,
+          ssn: data.ssn!,
+          email: data.email,
+          password: data.password,
+        };
 
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || "Authentication failed");
-        }
-
-        // After successful sign-up, create a session client-side
-        const client = new Client();
-        client
-          .setEndpoint(
-            process.env.NEXT_PUBLIC_APPWRITE_URL ||
-              "https://cloud.appwrite.io/v1"
-          )
-          .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "");
-
-        const account = new Account(client);
-
-        try {
-          await account.createEmailPasswordSession({
-            email: data.email,
-            password: data.password,
-          });
+        const newUser = await createUserAccount(userData);
+        if (newUser) {
           toast.success("Account created successfully!");
-        } catch (sessionError: any) {
-          // Handle 401 Unauthorized (likely email verification required)
-          if (
-            sessionError.code === 401 ||
-            sessionError.message?.includes("Unauthorized")
-          ) {
-            toast.error(
-              "Account created! Please check your email to verify your account before signing in."
-            );
-            // Redirect to sign-in page so user can sign in after verification
-            router.push("/sign-in");
-            return;
-          }
-
-          // If session already exists, we're already authenticated - just redirect
-          if (
-            sessionError.message &&
-            sessionError.message.includes("session is active")
-          ) {
-            // Verify we have a valid session
-            try {
-              await account.get();
-              // Session is valid - show success message and redirect
-              toast.success("Account created successfully!");
-            } catch (getError) {
-              // Session exists but invalid - delete and recreate
-              await account.deleteSession({ sessionId: "current" });
-              await account.createEmailPasswordSession({
-                email: data.email,
-                password: data.password,
-              });
-              toast.success("Account created successfully!");
-            }
-          } else {
-            throw sessionError;
-          }
+          router.push("/");
+        } else {
+          toast.error("Failed to create account.");
         }
-
-        // Small delay to ensure cookies are set before redirect
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // Use router for navigation
-        router.push("/");
-        router.refresh();
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
@@ -292,7 +198,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           </>
         ) : (
           <>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/sign-up" className="form-link">
               Sign Up
             </a>

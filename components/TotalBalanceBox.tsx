@@ -3,6 +3,7 @@
 
 import AnimatedCounter from "./AnimatedCounter";
 import DoughnutChart from "./DoughnutChart";
+import { TotalBalanceBoxProps } from "@/types";
 
 const TotalBalanceBox = ({
   accounts = [],

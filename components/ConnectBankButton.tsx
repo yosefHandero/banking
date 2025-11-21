@@ -22,13 +22,10 @@ export default function ConnectBankButton({ userId, variant = 'primary' }: Conne
   const handleConnectBank = async () => {
     setIsConnecting(true);
     try {
-      // Simulate bank connection flow
       const selectedBank = DEMO_BANKS[Math.floor(Math.random() * DEMO_BANKS.length)];
       
-      // Generate mock account
       const mockAccount = generateMockBankAccount(userId);
       
-      // Create account in database
       const account = await createBankAccount({
         userId,
         name: mockAccount.name,
@@ -42,7 +39,6 @@ export default function ConnectBankButton({ userId, variant = 'primary' }: Conne
         institutionName: selectedBank.name,
       });
 
-      // Generate and create mock transactions
       const mockTransactions = generateMockTransactions(userId, account.$id, 30, 90);
       for (const transaction of mockTransactions) {
         await createTransaction({

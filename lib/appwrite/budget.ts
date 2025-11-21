@@ -1,4 +1,8 @@
-import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+"use server";
+
+import { createSessionClient } from './server';
+import { ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+import { stringToInteger } from '../utils';
 
 export interface Budget {
   $id: string;
@@ -20,19 +24,22 @@ export async function createBudget(budgetData: {
   year: number;
 }) {
   try {
-    const { databases } = await getAppwriteClient();
+    const { databases } = await createSessionClient();
+    const startDate = new Date(budgetData.year, (budgetData.month || 1) - 1, 1);
+    const endDate = new Date(budgetData.year, budgetData.month || 12, 0);
+
     const budget = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
       ID.unique(),
       {
-        userId: budgetData.userId,
-        category: budgetData.category,
-        limit: budgetData.limit,
-        period: budgetData.period,
-        currentSpending: 0,
-        month: budgetData.month,
-        year: budgetData.year,
+        budgetId: stringToInteger(ID.unique()),
+        userId: stringToInteger(budgetData.userId),
+        name: budgetData.category,
+        startPeriod: startDate.toISOString(),
+        endPeriod: endDate.toISOString(),
+        totalAmount: budgetData.limit,
+        categories: budgetData.category,
       }
     );
 
@@ -44,33 +51,45 @@ export async function createBudget(budgetData: {
 
 export async function getBudgets(userId: string, year?: number, month?: number): Promise<Budget[]> {
   try {
-    const { databases } = await getAppwriteClient();
-    const queries = [Query.equal('userId', userId)];
-    
-    if (year) {
-      queries.push(Query.equal('year', year));
-    }
-    
-    if (month !== undefined) {
-      queries.push(Query.equal('month', month));
+    if (!userId || typeof userId !== 'string') {
+      console.error('Invalid userId provided to getBudgets:', userId);
+      return [];
     }
 
+    const { databases } = await createSessionClient();
+    const userIdInt = stringToInteger(userId);
+
+    // Get all budgets for the user
     const budgets = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
-      queries
+      [Query.equal('userId', userIdInt)]
     );
 
-    return budgets.documents.map((doc) => ({
-      $id: doc.$id,
-      userId: doc.userId,
-      category: doc.category,
-      limit: doc.limit,
-      period: doc.period,
-      currentSpending: doc.currentSpending || 0,
-      month: doc.month,
-      year: doc.year,
-    }));
+    return budgets.documents
+      .map((doc: any): Budget | null => {
+        const startDate = doc.startPeriod ? new Date(doc.startPeriod) : new Date();
+        const endDate = doc.endPeriod ? new Date(doc.endPeriod) : new Date();
+        const docYear = startDate.getFullYear();
+        const docMonth = startDate.getMonth() + 1;
+
+        if (year && docYear !== year) return null;
+        if (month !== undefined && docMonth !== month) return null;
+
+        const period: 'monthly' | 'yearly' = (endDate.getTime() - startDate.getTime()) < 32 * 24 * 60 * 60 * 1000 ? 'monthly' : 'yearly';
+
+        return {
+          $id: doc.$id,
+          userId: userId,
+          category: doc.categories || doc.name || '',
+          limit: doc.totalAmount || 0,
+          period: period,
+          currentSpending: 0,
+          month: docMonth,
+          year: docYear,
+        };
+      })
+      .filter((budget): budget is Budget => budget !== null);
   } catch (error) {
     console.error('Error getting budgets:', error);
     return [];
@@ -79,26 +98,26 @@ export async function getBudgets(userId: string, year?: number, month?: number):
 
 export async function updateBudgetSpending(budgetId: string, currentSpending: number, userId?: string) {
   try {
-    const { databases } = await getAppwriteClient();
-    
-    // SECURITY: Verify ownership if userId is provided
+    const { databases } = await createSessionClient();
+
     if (userId) {
       const budget = await databases.getDocument(
         DATABASE_ID,
         COLLECTIONS.BUDGETS,
         budgetId
       );
-      if (budget.userId !== userId) {
+      const userIdInt = stringToInteger(userId);
+      if (budget.userId !== userIdInt) {
         throw new Error('Unauthorized: Budget does not belong to you');
       }
     }
-    
+
     await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
       budgetId,
       {
-        currentSpending,
+        totalAmount: currentSpending,
       }
     );
   } catch (error) {
@@ -108,20 +127,20 @@ export async function updateBudgetSpending(budgetId: string, currentSpending: nu
 
 export async function deleteBudget(budgetId: string, userId?: string) {
   try {
-    const { databases } = await getAppwriteClient();
-    
-    // SECURITY: Verify ownership if userId is provided
+    const { databases } = await createSessionClient();
+
     if (userId) {
       const budget = await databases.getDocument(
         DATABASE_ID,
         COLLECTIONS.BUDGETS,
         budgetId
       );
-      if (budget.userId !== userId) {
+      const userIdInt = stringToInteger(userId);
+      if (budget.userId !== userIdInt) {
         throw new Error('Unauthorized: Budget does not belong to you');
       }
     }
-    
+
     await databases.deleteDocument(
       DATABASE_ID,
       COLLECTIONS.BUDGETS,
@@ -131,4 +150,3 @@ export async function deleteBudget(budgetId: string, userId?: string) {
     throw error;
   }
 }
-

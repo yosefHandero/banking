@@ -4,11 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-interface AIChatProps {
-  userId: string;
-}
-
-export default function AIChat({ userId }: AIChatProps) {
+export default function AIChat() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,7 +21,7 @@ export default function AIChat({ userId }: AIChatProps) {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userMessage, userId }),
+        body: JSON.stringify({ question: userMessage }),
       });
 
       const data = await response.json();

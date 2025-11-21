@@ -19,7 +19,7 @@ export default function AIInsightsWidget({ userId }: AIInsightsWidgetProps) {
 
   const loadSuggestions = async () => {
     try {
-      const response = await fetch(`/api/ai/suggestions?userId=${userId}`);
+      const response = await fetch(`/api/ai/suggestions`);
       const data = await response.json();
 
       if (response.ok) {

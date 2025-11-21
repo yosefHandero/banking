@@ -1,4 +1,8 @@
-import { getAppwriteClient, ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+"use server";
+
+import { createSessionClient } from './server';
+import { ID, Query, COLLECTIONS, DATABASE_ID } from './config';
+import { stringToInteger } from '../utils';
 
 export interface SavingsGoal {
   $id: string;
@@ -18,18 +22,22 @@ export async function createSavingsGoal(goalData: {
   description?: string;
 }) {
   try {
-    const { databases } = await getAppwriteClient();
+    const { databases } = await createSessionClient();
+    const startDate = new Date().toISOString();
+    const endDate = goalData.targetDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
     const goal = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.SAVINGS_GOALS,
       ID.unique(),
       {
-        userId: goalData.userId,
-        name: goalData.name,
+        goalId: Math.floor(Math.random() * 1000000),
+        userId: stringToInteger(goalData.userId),
+        goalName: goalData.name,
         targetAmount: goalData.targetAmount,
         currentAmount: 0,
-        targetDate: goalData.targetDate,
-        description: goalData.description || '',
+        startDate: startDate,
+        endDate: endDate,
       }
     );
 
@@ -41,21 +49,27 @@ export async function createSavingsGoal(goalData: {
 
 export async function getSavingsGoals(userId: string): Promise<SavingsGoal[]> {
   try {
-    const { databases } = await getAppwriteClient();
+    if (!userId || typeof userId !== 'string') {
+      console.error('Invalid userId provided to getSavingsGoals:', userId);
+      return [];
+    }
+
+    const { databases } = await createSessionClient();
+    const userIdInt = stringToInteger(userId);
     const goals = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.SAVINGS_GOALS,
-      [Query.equal('userId', userId)]
+      [Query.equal('userId', userIdInt)]
     );
 
-    return goals.documents.map((doc) => ({
+    return goals.documents.map((doc: any) => ({
       $id: doc.$id,
-      userId: doc.userId,
-      name: doc.name,
-      targetAmount: doc.targetAmount,
+      userId: userId, // Return original string ID
+      name: doc.goalName || '',
+      targetAmount: doc.targetAmount || 0,
       currentAmount: doc.currentAmount || 0,
-      targetDate: doc.targetDate,
-      description: doc.description || '',
+      targetDate: doc.endDate || '',
+      description: '',
     }));
   } catch (error) {
     console.error('Error getting savings goals:', error);
@@ -71,25 +85,31 @@ export async function updateSavingsGoal(goalId: string, updates: {
   description?: string;
 }, userId?: string) {
   try {
-    const { databases } = await getAppwriteClient();
-    
-    // SECURITY: Verify ownership if userId is provided
+    const { databases } = await createSessionClient();
+
     if (userId) {
       const goal = await databases.getDocument(
         DATABASE_ID,
         COLLECTIONS.SAVINGS_GOALS,
         goalId
       );
-      if (goal.userId !== userId) {
+      const userIdInt = stringToInteger(userId);
+      if (goal.userId !== userIdInt) {
         throw new Error('Unauthorized: Savings goal does not belong to you');
       }
     }
-    
+
+    const appwriteUpdates: any = {};
+    if (updates.currentAmount !== undefined) appwriteUpdates.currentAmount = updates.currentAmount;
+    if (updates.targetAmount !== undefined) appwriteUpdates.targetAmount = updates.targetAmount;
+    if (updates.name !== undefined) appwriteUpdates.goalName = updates.name;
+    if (updates.targetDate !== undefined) appwriteUpdates.endDate = updates.targetDate;
+
     await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.SAVINGS_GOALS,
       goalId,
-      updates
+      appwriteUpdates
     );
   } catch (error) {
     throw error;
@@ -98,20 +118,20 @@ export async function updateSavingsGoal(goalId: string, updates: {
 
 export async function deleteSavingsGoal(goalId: string, userId?: string) {
   try {
-    const { databases } = await getAppwriteClient();
-    
-    // SECURITY: Verify ownership if userId is provided
+    const { databases } = await createSessionClient();
+
     if (userId) {
       const goal = await databases.getDocument(
         DATABASE_ID,
         COLLECTIONS.SAVINGS_GOALS,
         goalId
       );
-      if (goal.userId !== userId) {
+      const userIdInt = stringToInteger(userId);
+      if (goal.userId !== userIdInt) {
         throw new Error('Unauthorized: Savings goal does not belong to you');
       }
     }
-    
+
     await databases.deleteDocument(
       DATABASE_ID,
       COLLECTIONS.SAVINGS_GOALS,
@@ -121,4 +141,3 @@ export async function deleteSavingsGoal(goalId: string, userId?: string) {
     throw error;
   }
 }
-

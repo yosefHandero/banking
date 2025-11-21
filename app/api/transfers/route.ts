@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json(
@@ -41,7 +40,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get accounts
     const fromAccount = await getAccount(fromAccountId);
     const toAccount = await getAccount(toAccountId);
 
@@ -52,7 +50,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify account ownership - CRITICAL SECURITY CHECK
     if (fromAccount.userId !== userInfo.userId) {
       return NextResponse.json(
         { error: 'Unauthorized: Source account does not belong to you' },
@@ -74,7 +71,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create mock transfer
     const transfer = createMockTransfer({
       userId: userInfo.userId,
       fromAccountId,
@@ -83,7 +79,6 @@ export async function POST(request: NextRequest) {
       description,
     });
 
-    // Process transfer (mock)
     const processedTransfer = processMockTransfer(transfer);
 
     if (processedTransfer.status === 'failed') {
@@ -93,7 +88,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update account balances (with userId verification for security)
     await updateAccountBalance(
       fromAccountId,
       fromAccount.currentBalance - amount,
@@ -108,10 +102,8 @@ export async function POST(request: NextRequest) {
       userInfo.userId
     );
 
-    // Create transaction records
     const today = format(new Date(), 'yyyy-MM-dd');
 
-    // Outgoing transaction
     await createTransaction({
       userId: userInfo.userId,
       accountId: fromAccountId,
@@ -127,7 +119,6 @@ export async function POST(request: NextRequest) {
       receiverBankId: toAccountId,
     });
 
-    // Incoming transaction
     await createTransaction({
       userId: userInfo.userId,
       accountId: toAccountId,
