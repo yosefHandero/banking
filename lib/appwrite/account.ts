@@ -4,6 +4,23 @@ import { createSessionClient } from './server';
 import { ID, Query, COLLECTIONS, DATABASE_ID } from './config';
 import { Account } from '@/types';
 
+// Map account types/subtypes to valid Appwrite accountType values
+function mapToValidAccountType(type: string, subtype: string): 'checking' | 'savings' | 'business' {
+  // Use subtype first as it's more specific
+  const normalizedSubtype = subtype.toLowerCase().trim();
+  
+  if (normalizedSubtype === 'checking') {
+    return 'checking';
+  }
+  
+  if (normalizedSubtype === 'savings') {
+    return 'savings';
+  }
+  
+  // For all other types (credit card, loan, investment, etc.), use 'business'
+  return 'business';
+}
+
 export async function createBankAccount(accountData: {
   userId: string;
   name: string;
@@ -21,6 +38,9 @@ export async function createBankAccount(accountData: {
     const accountId = ID.unique();
     const accountNumber = accountData.mask || Math.random().toString().slice(2, 12);
 
+    // Map to valid Appwrite accountType
+    const validAccountType = mapToValidAccountType(accountData.type, accountData.subtype);
+
     const account = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.ACCOUNTS,
@@ -30,9 +50,16 @@ export async function createBankAccount(accountData: {
         accountNumber: accountNumber,
         accountOwnerId: accountData.userId,
         balance: accountData.currentBalance,
-        accountType: accountData.type,
+        accountType: validAccountType,
         interestRate: 0,
         createdDate: new Date().toISOString(),
+        // Store additional account details for proper display
+        accountName: accountData.name,
+        officialName: accountData.officialName,
+        institutionName: accountData.institutionName,
+        institutionId: accountData.institutionId,
+        accountTypeOriginal: accountData.type,
+        accountSubtype: accountData.subtype,
       }
     );
 
@@ -77,12 +104,12 @@ export async function getAccounts(userId: string): Promise<Account[]> {
         id: doc.$id,
         availableBalance: doc.balance || 0,
         currentBalance: doc.balance || 0,
-        officialName: doc.accountType || '',
+        officialName: doc.officialName || doc.accountType || '',
         mask: doc.accountNumber || '',
-        institutionId: doc.accountId || '',
-        name: doc.accountType || 'Account',
-        type: doc.accountType || '',
-        subtype: '',
+        institutionId: doc.institutionId || doc.accountId || '',
+        name: doc.accountName || doc.accountType || 'Account',
+        type: doc.accountTypeOriginal || doc.accountType || '',
+        subtype: doc.accountSubtype || '',
         appwriteItemId: doc.accountId || doc.$id,
         sharableId: doc.accountId || doc.$id,
         userId: doc.accountOwnerId || doc.userId || '',
@@ -106,12 +133,12 @@ export async function getAccount(accountId: string): Promise<Account | null> {
       id: account.$id,
       availableBalance: account.balance || 0,
       currentBalance: account.balance || 0,
-      officialName: account.accountType || '',
+      officialName: account.officialName || account.accountType || '',
       mask: account.accountNumber || '',
-      institutionId: account.accountId || '',
-      name: account.accountType || 'Account',
-      type: account.accountType || '',
-      subtype: '',
+      institutionId: account.institutionId || account.accountId || '',
+      name: account.accountName || account.accountType || 'Account',
+      type: account.accountTypeOriginal || account.accountType || '',
+      subtype: account.accountSubtype || '',
       appwriteItemId: account.accountId || account.$id,
       sharableId: account.accountId || account.$id,
       userId: account.accountOwnerId || '',

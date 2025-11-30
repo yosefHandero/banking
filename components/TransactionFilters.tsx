@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { format, startOfMonth, endOfMonth, subMonths, subDays } from 'date-fns';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { format, startOfMonth, endOfMonth, subMonths, subDays } from "date-fns";
 
 interface TransactionFiltersProps {
   onFilterChange: (filters: {
@@ -13,41 +13,43 @@ interface TransactionFiltersProps {
   }) => void;
 }
 
-export default function TransactionFilters({ onFilterChange }: TransactionFiltersProps) {
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+export default function TransactionFilters({
+  onFilterChange,
+}: TransactionFiltersProps) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const categories = [
-    'All',
-    'Food and Drink',
-    'Travel',
-    'Shopping',
-    'Entertainment',
-    'Bills',
-    'Transfer',
-    'Payment',
-    'Other',
+    "All",
+    "Food and Drink",
+    "Travel",
+    "Shopping",
+    "Entertainment",
+    "Bills",
+    "Transfer",
+    "Payment",
+    "Other",
   ];
 
-  const handleQuickFilter = (period: 'week' | 'month' | '3months' | 'year') => {
+  const handleQuickFilter = (period: "week" | "month" | "3months" | "year") => {
     const today = new Date();
-    let from = '';
-    let to = format(today, 'yyyy-MM-dd');
+    let from = "";
+    let to = format(today, "yyyy-MM-dd");
 
     switch (period) {
-      case 'week':
-        from = format(subDays(today, 7), 'yyyy-MM-dd');
+      case "week":
+        from = format(subDays(today, 7), "yyyy-MM-dd");
         break;
-      case 'month':
-        from = format(startOfMonth(today), 'yyyy-MM-dd');
+      case "month":
+        from = format(startOfMonth(today), "yyyy-MM-dd");
         break;
-      case '3months':
-        from = format(startOfMonth(subMonths(today, 3)), 'yyyy-MM-dd');
+      case "3months":
+        from = format(startOfMonth(subMonths(today, 3)), "yyyy-MM-dd");
         break;
-      case 'year':
-        from = format(startOfMonth(subMonths(today, 12)), 'yyyy-MM-dd');
+      case "year":
+        from = format(startOfMonth(subMonths(today, 12)), "yyyy-MM-dd");
         break;
     }
 
@@ -57,11 +59,16 @@ export default function TransactionFilters({ onFilterChange }: TransactionFilter
   };
 
   const handleApplyFilters = () => {
-    onFilterChange({ search, category: category === 'All' ? '' : category, dateFrom, dateTo });
+    onFilterChange({
+      search,
+      category: category === "All" ? "" : category,
+      dateFrom,
+      dateTo,
+    });
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white rounded-lg shadow-form">
+    <div className="flex flex-col gap-4 p-4 bg-[#001122] rounded-lg shadow-form border border-gray-700">
       <div className="flex flex-col gap-4 md:flex-row">
         <input
           type="text"
@@ -106,28 +113,28 @@ export default function TransactionFilters({ onFilterChange }: TransactionFilter
       <div className="flex gap-2 flex-wrap">
         <Button
           variant="ghost"
-          onClick={() => handleQuickFilter('week')}
+          onClick={() => handleQuickFilter("week")}
           className="text-12"
         >
           This Week
         </Button>
         <Button
           variant="ghost"
-          onClick={() => handleQuickFilter('month')}
+          onClick={() => handleQuickFilter("month")}
           className="text-12"
         >
           This Month
         </Button>
         <Button
           variant="ghost"
-          onClick={() => handleQuickFilter('3months')}
+          onClick={() => handleQuickFilter("3months")}
           className="text-12"
         >
           Last 3 Months
         </Button>
         <Button
           variant="ghost"
-          onClick={() => handleQuickFilter('year')}
+          onClick={() => handleQuickFilter("year")}
           className="text-12"
         >
           This Year
@@ -136,4 +143,3 @@ export default function TransactionFilters({ onFilterChange }: TransactionFilter
     </div>
   );
 }
-

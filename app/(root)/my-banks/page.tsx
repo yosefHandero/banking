@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
 import { getAccounts } from "@/lib/appwrite/account";
 import BankAccountList from "@/components/BankAccountList";
+import LoadingBar from "@/components/LoadingBar";
 import { Account } from "@/types";
 import { generateMockBankAccounts } from "@/lib/mock/bankData";
 
@@ -30,21 +31,23 @@ export default function MyBanksPage() {
       }
 
       const accountsData = await getAccounts(userInfo.userId);
-      
+
       if (accountsData.length === 0) {
         const generatedAccounts = generateMockBankAccounts(userInfo.userId, 2);
-        const mockAccounts: Account[] = generatedAccounts.map((acc: any, index: number) => ({
-          ...acc,
-          id: acc.name.toLowerCase().replace(/\s+/g, '-'),
-          appwriteItemId: `mock-item-${index + 1}`,
-          sharableId: `mock-share-${index + 1}`,
-          userId: userInfo.userId
-        }));
+        const mockAccounts: Account[] = generatedAccounts.map(
+          (acc: any, index: number) => ({
+            ...acc,
+            id: acc.name.toLowerCase().replace(/\s+/g, "-"),
+            appwriteItemId: `mock-item-${index + 1}`,
+            sharableId: `mock-share-${index + 1}`,
+            userId: userInfo.userId,
+          })
+        );
         setAccounts(mockAccounts);
       } else {
         setAccounts(accountsData);
       }
-      
+
       setUserId(userInfo.userId);
       setLoading(false);
     }
@@ -53,11 +56,7 @@ export default function MyBanksPage() {
   }, [router]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-16 text-gray-600">Loading...</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   return (

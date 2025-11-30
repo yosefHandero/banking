@@ -105,7 +105,11 @@ export default function SavingsGoalsPage() {
         return;
       }
 
-      await updateSavingsGoal(goalId, { currentAmount: newAmount }, userInfo.userId);
+      await updateSavingsGoal(
+        goalId,
+        { currentAmount: newAmount },
+        userInfo.userId
+      );
       toast.success("Goal updated successfully!");
       loadGoals();
     } catch (error: any) {
@@ -159,7 +163,7 @@ export default function SavingsGoalsPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-form"
+          className="flex flex-col gap-4 p-6 bg-[#001122] rounded-lg shadow-form border border-gray-700"
         >
           <div className="flex flex-col gap-2">
             <label className="form-label">Goal Name</label>
@@ -216,10 +220,10 @@ export default function SavingsGoalsPage() {
       <div className="flex flex-col gap-4">
         {goals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-16 text-gray-600">
+            <p className="text-16 text-gray-300">
               No savings goals created yet
             </p>
-            <p className="text-14 text-gray-500">
+            <p className="text-14 text-gray-400">
               Create your first goal to get started
             </p>
           </div>

@@ -19,7 +19,7 @@ export default function BudgetCard({ budget, onDelete }: BudgetCardProps) {
     ] || transactionCategoryStyles.default;
 
   return (
-    <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-form">
+    <div className="flex flex-col gap-4 p-6 bg-[#001122] rounded-lg shadow-form border border-gray-700">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
@@ -30,10 +30,10 @@ export default function BudgetCard({ budget, onDelete }: BudgetCardProps) {
             </p>
           </div>
           <div>
-            <p className="text-16 font-semibold text-gray-900">
+            <p className="text-16 font-semibold text-white">
               {budget.category}
             </p>
-            <p className="text-12 text-gray-600">
+            <p className="text-12 text-gray-300">
               {budget.period === "monthly" ? "Monthly" : "Yearly"} Budget
             </p>
           </div>
@@ -41,7 +41,7 @@ export default function BudgetCard({ budget, onDelete }: BudgetCardProps) {
         {onDelete && (
           <button
             onClick={() => onDelete(budget.$id)}
-            className="text-14 text-red-600 hover:text-red-700"
+            className="text-14 text-red-400 hover:text-red-300"
           >
             Delete
           </button>
@@ -50,33 +50,33 @@ export default function BudgetCard({ budget, onDelete }: BudgetCardProps) {
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-14 text-gray-600">Spent</p>
+          <p className="text-14 text-gray-300">Spent</p>
           <p
             className={`text-16 font-semibold ${
-              isOverBudget ? "text-red-600" : "text-gray-900"
+              isOverBudget ? "text-red-400" : "text-white"
             }`}
           >
             {formatAmount(budget.currentSpending)} /{" "}
             {formatAmount(budget.limit)}
           </p>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-700 rounded-full h-3">
           <div
-            className={`h-2 rounded-full transition-all ${
+            className={`h-3 rounded-full transition-all ${
               isOverBudget
-                ? "bg-red-600"
-                : styles.backgroundColor || "bg-blue-600"
+                ? "bg-red-500"
+                : styles.backgroundColor || "bg-blue-500"
             }`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-12 text-gray-600">
+          <p className="text-12 text-gray-300">
             {isOverBudget ? "Over budget by" : "Remaining"}
           </p>
           <p
             className={`text-14 font-medium ${
-              isOverBudget ? "text-red-600" : "text-success-700"
+              isOverBudget ? "text-red-400" : "text-green-400"
             }`}
           >
             {formatAmount(Math.abs(remaining))}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
+import LoadingBar from "@/components/LoadingBar";
 
 export default function RootLayout({
   children,
@@ -43,11 +44,7 @@ export default function RootLayout({
   }, [router]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-16 text-gray-600">Loading...</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (!user) {
@@ -57,7 +54,7 @@ export default function RootLayout({
   return (
     <main className="flex h-screen w-full font-inter">
       <Sidebar user={user} />
-      <section className="flex flex-col size-full bg-gray-50">
+      <section className="flex flex-col size-full bg-[#001122]">
         <div className="flex h-screen flex-col gap-6 overflow-y-scroll xl:overflow-y-hidden pb-20 md:pb-0">
           {children}
         </div>

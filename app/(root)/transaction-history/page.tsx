@@ -1,25 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { getCurrentUser, getUserInfo } from '@/lib/appwrite/user';
-import { getTransactions } from '@/lib/appwrite/transaction';
-import { Transaction } from '@/types';
-import { generateMockTransactions } from '@/lib/mock/transactions';
-import HeaderBox from '@/components/HeaderBox';
-import TransactionCard from '@/components/TransactionCard';
-import TransactionFilters from '@/components/TransactionFilters';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
+import { getTransactions } from "@/lib/appwrite/transaction";
+import { Transaction } from "@/types";
+import { generateMockTransactions } from "@/lib/mock/transactions";
+import HeaderBox from "@/components/HeaderBox";
+import TransactionCard from "@/components/TransactionCard";
+import TransactionFilters from "@/components/TransactionFilters";
+import LoadingBar from "@/components/LoadingBar";
+import { useRouter } from "next/navigation";
 
 export default function TransactionHistoryPage() {
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    search: '',
-    category: '',
-    dateFrom: '',
-    dateTo: '',
+    search: "",
+    category: "",
+    dateFrom: "",
+    dateTo: "",
   });
 
   useEffect(() => {
@@ -34,33 +37,39 @@ export default function TransactionHistoryPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push('/sign-in');
+        router.push("/sign-in");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push('/sign-in');
+        router.push("/sign-in");
         return;
       }
 
       const allTransactions = await getTransactions(userInfo.userId);
-      
+
       if (allTransactions.length === 0) {
-        const generatedTransactions = generateMockTransactions(userInfo.userId, 'mock-1', 20);
-        const mockTransactions: Transaction[] = generatedTransactions.map((tx: any, index: number) => ({
-          ...tx,
-          id: `tx-${index + 1}`,
-          $id: `tx-${index + 1}`,
-          $createdAt: new Date().toISOString(),
-          paymentChannelType: 'online'
-        }));
+        const generatedTransactions = generateMockTransactions(
+          userInfo.userId,
+          "mock-1",
+          20
+        );
+        const mockTransactions: Transaction[] = generatedTransactions.map(
+          (tx: any, index: number) => ({
+            ...tx,
+            id: `tx-${index + 1}`,
+            $id: `tx-${index + 1}`,
+            $createdAt: new Date().toISOString(),
+            paymentChannelType: "online",
+          })
+        );
         setTransactions(mockTransactions);
       } else {
         setTransactions(allTransactions);
       }
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      console.error("Error loading transactions:", error);
     } finally {
       setLoading(false);
     }
@@ -95,11 +104,7 @@ export default function TransactionHistoryPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-16 text-gray-600">Loading transactions...</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   return (
@@ -115,16 +120,20 @@ export default function TransactionHistoryPage() {
       <div className="flex flex-col gap-4">
         {filteredTransactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-16 text-gray-600">No transactions found</p>
+            <p className="text-16 text-gray-300">No transactions found</p>
           </div>
         ) : (
           <>
-            <p className="text-14 text-gray-600">
-              Showing {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+            <p className="text-14 text-gray-300">
+              Showing {filteredTransactions.length} transaction
+              {filteredTransactions.length !== 1 ? "s" : ""}
             </p>
             <div className="flex flex-col gap-2">
               {filteredTransactions.map((transaction) => (
-                <TransactionCard key={transaction.id} transaction={transaction} />
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                />
               ))}
             </div>
           </>
@@ -133,4 +142,3 @@ export default function TransactionHistoryPage() {
     </div>
   );
 }
-

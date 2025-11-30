@@ -1,14 +1,17 @@
-import { Account } from '@/types';
-import BankCard from './BankCard';
-import ConnectBankButton from './ConnectBankButton';
-import HeaderBox from './HeaderBox';
+import { Account } from "@/types";
+import BankCard from "./BankCard";
+import ConnectBankButton from "./ConnectBankButton";
+import HeaderBox from "./HeaderBox";
 
 interface BankAccountListProps {
   accounts: Account[];
   userId: string;
 }
 
-export default function BankAccountList({ accounts, userId }: BankAccountListProps) {
+export default function BankAccountList({
+  accounts,
+  userId,
+}: BankAccountListProps) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex justify-between items-center">
@@ -22,7 +25,7 @@ export default function BankAccountList({ accounts, userId }: BankAccountListPro
 
       {accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-16">
-          <p className="text-16 font-medium text-gray-600">
+          <p className="text-16 font-medium text-gray-300">
             No bank accounts connected yet
           </p>
           <ConnectBankButton userId={userId} variant="primary" />
@@ -37,4 +40,3 @@ export default function BankAccountList({ accounts, userId }: BankAccountListPro
     </section>
   );
 }
-

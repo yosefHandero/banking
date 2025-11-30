@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
 import HeaderBox from "@/components/HeaderBox";
+import LoadingBar from "@/components/LoadingBar";
 import { Button } from "@/components/ui/button";
 import { User } from "@/types";
 
@@ -35,11 +36,7 @@ export default function SettingsPage() {
   }, [router]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-16 text-gray-600">Loading...</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (!userInfo) {
@@ -55,13 +52,13 @@ export default function SettingsPage() {
       />
 
       <div className="flex flex-col gap-6 max-w-2xl">
-        <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-form">
-          <h2 className="text-18 font-semibold text-gray-900">
+        <div className="flex flex-col gap-4 p-6 bg-[#001122] rounded-lg shadow-form border border-gray-700">
+          <h2 className="text-18 font-semibold text-white">
             Profile Information
           </h2>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className="form-label">First Name</label>
+              <label className="form-label text-gray-300">First Name</label>
               <input
                 type="text"
                 className="input-class"
@@ -126,15 +123,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-form">
-          <h2 className="text-18 font-semibold text-gray-900">Preferences</h2>
+        <div className="flex flex-col gap-4 p-6 bg-[#001122] rounded-lg shadow-form border border-gray-700">
+          <h2 className="text-18 font-semibold text-white">Preferences</h2>
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <p className="text-14 font-semibold text-gray-900">
+                <p className="text-14 font-semibold text-white">
                   Email Notifications
                 </p>
-                <p className="text-12 text-gray-600">
+                <p className="text-12 text-gray-300">
                   Receive email updates about your account
                 </p>
               </div>
@@ -142,10 +139,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <p className="text-14 font-semibold text-gray-900">
+                <p className="text-14 font-semibold text-white">
                   Spending Alerts
                 </p>
-                <p className="text-12 text-gray-600">
+                <p className="text-12 text-gray-300">
                   Get notified when you exceed budget limits
                 </p>
               </div>
@@ -153,10 +150,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <p className="text-14 font-semibold text-gray-900">
+                <p className="text-14 font-semibold text-white">
                   Transaction Notifications
                 </p>
-                <p className="text-12 text-gray-600">
+                <p className="text-12 text-gray-300">
                   Receive notifications for large transactions
                 </p>
               </div>
@@ -167,7 +164,7 @@ export default function SettingsPage() {
 
         <div className="flex gap-4">
           <Button className="form-btn">Save Changes</Button>
-          <Button variant="ghost" className="text-red-600 hover:text-red-700">
+          <Button variant="ghost" className="text-red-400 hover:text-red-300">
             Delete Account
           </Button>
         </div>

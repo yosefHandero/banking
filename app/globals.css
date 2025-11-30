@@ -44,7 +44,7 @@
 
 @layer utilities {
   .input-class {
-    @apply text-14 placeholder:text-14 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-500 bg-white px-3 py-2.5 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200 hover:border-gray-400;
+    @apply text-14 placeholder:text-14 rounded-lg border border-gray-600 text-white placeholder:text-gray-400 bg-[#001122] px-3 py-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-500;
   }
 
   .sheet-content button {
@@ -60,27 +60,27 @@
   }
 
   .header-2 {
-    @apply text-24 font-semibold text-gray-900;
+    @apply text-24 font-semibold text-white;
   }
 
   .header-box-title {
-    @apply text-30 font-bold text-gray-900;
+    @apply text-30 font-bold text-white;
   }
 
   .header-box-subtext {
-    @apply text-14 lg:text-16 font-normal text-gray-600;
+    @apply text-14 lg:text-16 font-normal text-gray-300;
   }
 
   .total-balance-amount {
-    @apply text-30 lg:text-36 flex-1 font-bold text-gray-900;
+    @apply text-30 lg:text-36 flex-1 font-bold text-white;
   }
 
   .total-balance-label {
-    @apply text-14 font-medium text-gray-600;
+    @apply text-14 font-medium text-gray-300;
   }
 
   .recent-transactions-label {
-    @apply text-20 md:text-24 font-bold text-gray-900;
+    @apply text-20 md:text-24 font-bold text-white;
   }
 
   .text-10 {
@@ -173,7 +173,7 @@
   }
 
   .form-label {
-    @apply text-14 w-full max-w-[280px] font-medium text-gray-700;
+    @apply text-14 w-full max-w-[280px] font-medium text-gray-300;
   }
 
   .form-message {
@@ -268,4 +268,35 @@
   .sidebar-label {
     @apply text-16 font-semibold text-white max-xl:hidden;
   }
+
+  /* Home Page */
+  .home {
+    @apply flex flex-col gap-8 p-8 md:p-12;
+  }
+
+  .home-content {
+    @apply flex flex-col gap-8;
+  }
+
+  .home-header {
+    @apply flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between;
+  }
+
+  .home-content-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  }
+}
+
+/* Loading Bar Animation */
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1.5s ease-in-out infinite;
 }

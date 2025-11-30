@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { chatWithAI } from '@/lib/openai/suggestions';
+import { chatWithAI } from '@/lib/ai/suggestions';
 import { getTransactions } from '@/lib/appwrite/transaction';
 import { getBudgets } from '@/lib/appwrite/budget';
 import { getSavingsGoals } from '@/lib/appwrite/goals';
@@ -45,10 +45,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ response });
   } catch (error: any) {
+    console.error('API Error in chat route:', error);
+    
+    const statusCode = error?.message?.includes('rate limit') ? 429 : 500;
+    
     return NextResponse.json(
       { error: error.message || 'Failed to get AI response' },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }
-

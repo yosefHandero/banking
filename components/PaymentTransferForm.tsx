@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Account } from '@/types';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import BankDropdown from './BankDropdown';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { Account } from "@/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import BankDropdown from "./BankDropdown";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const transferSchema = z.object({
-  fromAccountId: z.string().min(1, 'Source account is required'),
-  toAccountId: z.string().min(1, 'Destination account is required'),
-  amount: z.number().min(0.01, 'Amount must be greater than 0'),
+  fromAccountId: z.string().min(1, "Source account is required"),
+  toAccountId: z.string().min(1, "Destination account is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
   description: z.string().optional(),
 });
 
@@ -21,7 +21,9 @@ interface PaymentTransferFormProps {
   accounts: Account[];
 }
 
-export default function PaymentTransferForm({ accounts }: PaymentTransferFormProps) {
+export default function PaymentTransferForm({
+  accounts,
+}: PaymentTransferFormProps) {
   const router = useRouter();
   const [isTransferring, setIsTransferring] = useState(false);
   const {
@@ -35,45 +37,45 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
     resolver: zodResolver(transferSchema),
   });
 
-  const fromAccountId = watch('fromAccountId');
+  const fromAccountId = watch("fromAccountId");
   const selectedFromAccount = accounts.find((acc) => acc.id === fromAccountId);
 
   const onSubmit = async (data: any) => {
     if (data.fromAccountId === data.toAccountId) {
-      toast.error('Source and destination accounts must be different');
+      toast.error("Source and destination accounts must be different");
       return;
     }
 
     const fromAccount = accounts.find((acc) => acc.id === data.fromAccountId);
     if (fromAccount && data.amount > fromAccount.availableBalance) {
-      toast.error('Insufficient funds');
+      toast.error("Insufficient funds");
       return;
     }
 
     setIsTransferring(true);
     try {
-      const response = await fetch('/api/transfers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/transfers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fromAccountId: data.fromAccountId,
           toAccountId: data.toAccountId,
           amount: data.amount,
-          description: data.description || 'Transfer',
+          description: data.description || "Transfer",
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Transfer failed');
+        throw new Error(result.error || "Transfer failed");
       }
 
-      toast.success('Transfer completed successfully!');
+      toast.success("Transfer completed successfully!");
       reset();
       router.refresh();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to complete transfer');
+      toast.error(error.message || "Failed to complete transfer");
     } finally {
       setIsTransferring(false);
     }
@@ -84,7 +86,7 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
       <BankDropdown
         accounts={accounts}
         value={fromAccountId}
-        onChange={(id) => setValue('fromAccountId', id)}
+        onChange={(id) => setValue("fromAccountId", id)}
         label="From Account"
       />
       {errors.fromAccountId && (
@@ -92,9 +94,9 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
       )}
 
       {selectedFromAccount && (
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <p className="text-14 text-gray-600">Available Balance</p>
-          <p className="text-18 font-semibold text-gray-900">
+        <div className="p-4 bg-[#001122] rounded-lg border border-gray-700">
+          <p className="text-14 text-gray-300">Available Balance</p>
+          <p className="text-18 font-semibold text-white">
             ${selectedFromAccount.availableBalance.toFixed(2)}
           </p>
         </div>
@@ -102,8 +104,8 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
 
       <BankDropdown
         accounts={accounts}
-        value={watch('toAccountId')}
-        onChange={(id) => setValue('toAccountId', id)}
+        value={watch("toAccountId")}
+        onChange={(id) => setValue("toAccountId", id)}
         label="To Account"
         excludeAccountId={fromAccountId}
       />
@@ -117,7 +119,7 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
           type="number"
           step="0.01"
           className="input-class"
-          {...register('amount', { valueAsNumber: true })}
+          {...register("amount", { valueAsNumber: true })}
         />
         {errors.amount && (
           <p className="form-message">{errors.amount.message as string}</p>
@@ -130,14 +132,13 @@ export default function PaymentTransferForm({ accounts }: PaymentTransferFormPro
           type="text"
           className="input-class"
           placeholder="e.g., Monthly savings transfer"
-          {...register('description')}
+          {...register("description")}
         />
       </div>
 
       <Button type="submit" className="form-btn" disabled={isTransferring}>
-        {isTransferring ? 'Processing...' : 'Transfer Funds'}
+        {isTransferring ? "Processing..." : "Transfer Funds"}
       </Button>
     </form>
   );
 }
-

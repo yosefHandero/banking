@@ -70,8 +70,8 @@ const config = {
         },
         // Dark Theme Colors (Midnight Blue)
         dark: {
-          bg1: "#001219", // Deep Navy
-          bg2: "#001F3F", // Navy
+          bg1: "#001122", // Deep Navy Blue
+          bg2: "#001122", // Deep Navy Blue (matching screenshot)
           card: "#0A2540", // Lighter Navy for cards
           text: {
             main: "#FFFFFF",
@@ -85,10 +85,10 @@ const config = {
         "bank-green-gradient":
           "linear-gradient(90deg, #01797A 0%, #489399 100%)",
         // Page Gradients (Dark Blue)
-        "gradient-home": "linear-gradient(135deg, #001219 0%, #001F3F 100%)",
-        "gradient-banks": "linear-gradient(135deg, #001F3F 0%, #112240 100%)",
+        "gradient-home": "linear-gradient(135deg, #001122 0%, #001122 100%)",
+        "gradient-banks": "linear-gradient(135deg, #001122 0%, #112240 100%)",
         "gradient-transactions": "linear-gradient(135deg, #020617 0%, #0F172A 100%)",
-        "gradient-transfer": "linear-gradient(135deg, #000000 0%, #0A2540 100%)",
+        "gradient-transfer": "linear-gradient(135deg, #001122 0%, #0A2540 100%)",
       },
       boxShadow: {
         form: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",

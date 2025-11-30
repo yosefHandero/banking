@@ -12,6 +12,7 @@ import TotalBalanceBox from "@/components/TotalBalanceBox";
 import RecentTransactions from "@/components/RecentTransactions";
 import FinancialSummary from "@/components/FinancialSummary";
 import AIInsightsWidget from "@/components/AIInsightsWidget";
+import LoadingBar from "@/components/LoadingBar";
 import { Account } from "@/types";
 import { Transaction } from "@/types";
 import { Budget } from "@/lib/appwrite/budget";
@@ -56,90 +57,102 @@ export default function Home() {
 
         // Use mock data if real data is empty (for demonstration)
         if (accountsData.length === 0) {
-           const generatedAccounts = generateMockBankAccounts(user.userId, 2);
-           const mockAccounts: Account[] = generatedAccounts.map((acc: any, index: number) => ({
-             ...acc,
-             id: `mock-${index + 1}`,
-             appwriteItemId: `mock-item-${index + 1}`,
-             sharableId: `mock-share-${index + 1}`,
-             userId: user.userId
-           }));
-           setAccounts(mockAccounts);
+          const generatedAccounts = generateMockBankAccounts(user.userId, 2);
+          const mockAccounts: Account[] = generatedAccounts.map(
+            (acc: any, index: number) => ({
+              ...acc,
+              id: `mock-${index + 1}`,
+              appwriteItemId: `mock-item-${index + 1}`,
+              sharableId: `mock-share-${index + 1}`,
+              userId: user.userId,
+            })
+          );
+          setAccounts(mockAccounts);
         } else {
-           setAccounts(accountsData);
+          setAccounts(accountsData);
         }
 
         if (transactionsData.length === 0) {
-           // Generate transactions for the first mock account if available, otherwise just random
-           const accountId = accountsData.length > 0 ? accountsData[0].id : 'mock-1';
-           const generatedTransactions = generateMockTransactions(user.userId, accountId, 10);
-           
-           const mockTransactions: Transaction[] = generatedTransactions.map((tx: any, index: number) => ({
-             ...tx,
-             id: `tx-${index + 1}`,
-             $id: `tx-${index + 1}`,
-             $createdAt: new Date().toISOString(),
-             paymentChannelType: 'online' // Ensure this required field is present if not in generator
-           }));
-           setTransactions(mockTransactions);
+          // Generate transactions for the first mock account if available, otherwise just random
+          const accountId =
+            accountsData.length > 0 ? accountsData[0].id : "mock-1";
+          const generatedTransactions = generateMockTransactions(
+            user.userId,
+            accountId,
+            10
+          );
+
+          const mockTransactions: Transaction[] = generatedTransactions.map(
+            (tx: any, index: number) => ({
+              ...tx,
+              id: `tx-${index + 1}`,
+              $id: `tx-${index + 1}`,
+              $createdAt: new Date().toISOString(),
+              paymentChannelType: "online", // Ensure this required field is present if not in generator
+            })
+          );
+          setTransactions(mockTransactions);
         } else {
-           setTransactions(transactionsData);
+          setTransactions(transactionsData);
         }
 
         if (budgetsData.length === 0) {
-           const mockBudgets: Budget[] = [
-             {
-               $id: 'budget-1',
-               userId: user.userId,
-               category: 'Food and Drink',
-               limit: 500,
-               period: 'monthly',
-               currentSpending: 150.25,
-               month: new Date().getMonth() + 1,
-               year: new Date().getFullYear()
-             },
-             {
-               $id: 'budget-2',
-               userId: user.userId,
-               category: 'Bills',
-               limit: 1000,
-               period: 'monthly',
-               currentSpending: 120.50,
-               month: new Date().getMonth() + 1,
-               year: new Date().getFullYear()
-             }
-           ];
-           setBudgets(mockBudgets);
+          const mockBudgets: Budget[] = [
+            {
+              $id: "budget-1",
+              userId: user.userId,
+              category: "Food and Drink",
+              limit: 500,
+              period: "monthly",
+              currentSpending: 150.25,
+              month: new Date().getMonth() + 1,
+              year: new Date().getFullYear(),
+            },
+            {
+              $id: "budget-2",
+              userId: user.userId,
+              category: "Bills",
+              limit: 1000,
+              period: "monthly",
+              currentSpending: 120.5,
+              month: new Date().getMonth() + 1,
+              year: new Date().getFullYear(),
+            },
+          ];
+          setBudgets(mockBudgets);
         } else {
-           setBudgets(budgetsData);
+          setBudgets(budgetsData);
         }
 
         if (goalsData.length === 0) {
-           const mockGoals: SavingsGoal[] = [
-             {
-               $id: 'goal-1',
-               userId: user.userId,
-               name: 'New Car',
-               targetAmount: 25000,
-               currentAmount: 5000,
-               targetDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
-               description: 'Saving for a Tesla'
-             },
-             {
-               $id: 'goal-2',
-               userId: user.userId,
-               name: 'Vacation',
-               targetAmount: 3000,
-               currentAmount: 1200,
-               targetDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString(),
-               description: 'Trip to Japan'
-             }
-           ];
-           setGoals(mockGoals);
+          const mockGoals: SavingsGoal[] = [
+            {
+              $id: "goal-1",
+              userId: user.userId,
+              name: "New Car",
+              targetAmount: 25000,
+              currentAmount: 5000,
+              targetDate: new Date(
+                new Date().setFullYear(new Date().getFullYear() + 1)
+              ).toISOString(),
+              description: "Saving for a Tesla",
+            },
+            {
+              $id: "goal-2",
+              userId: user.userId,
+              name: "Vacation",
+              targetAmount: 3000,
+              currentAmount: 1200,
+              targetDate: new Date(
+                new Date().setMonth(new Date().getMonth() + 6)
+              ).toISOString(),
+              description: "Trip to Japan",
+            },
+          ];
+          setGoals(mockGoals);
         } else {
-           setGoals(goalsData);
+          setGoals(goalsData);
         }
-
       } catch (error) {
         console.error("Error loading data:", error);
         router.push("/sign-in");
@@ -152,11 +165,7 @@ export default function Home() {
   }, [router]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-bank-gradient">
-        <p className="text-20 text-white font-semibold">Loading...</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   const totalCurrentBalance = accounts.reduce(
