@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -115,6 +115,9 @@ export default function AuthForm({ type }: AuthFormProps) {
     }
   };
 
+  // Type-safe error access: cast to SignUpFormData errors when in sign-up mode
+  const signUpErrors = type === "sign-up" ? (errors as FieldErrors<SignUpFormData>) : null;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
       {type === "sign-up" && (
@@ -126,9 +129,9 @@ export default function AuthForm({ type }: AuthFormProps) {
               className="input-class"
               {...register("firstName")}
             />
-            {errors.firstName && (
+            {signUpErrors?.firstName && (
               <p className="form-message">
-                {errors.firstName.message}
+                {signUpErrors.firstName.message}
               </p>
             )}
           </div>
@@ -139,9 +142,9 @@ export default function AuthForm({ type }: AuthFormProps) {
               className="input-class"
               {...register("lastName")}
             />
-            {errors.lastName && (
+            {signUpErrors?.lastName && (
               <p className="form-message">
-                {errors.lastName.message}
+                {signUpErrors.lastName.message}
               </p>
             )}
           </div>
