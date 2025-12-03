@@ -73,17 +73,19 @@ export default function AuthForm({ type }: AuthFormProps) {
           return; // Don't proceed if sign-in fails
         }
       } else {
+        // TypeScript type narrowing: we know it's SignUpFormData when type === "sign-up"
+        const signUpData = data as SignUpFormData;
         const userData: SignUpFormData = {
-          firstName: data.firstName!,
-          lastName: data.lastName!,
-          address1: data.address1,
-          city: data.city,
-          state: data.state,
-          postalCode: data.postalCode,
-          dateOfBirth: data.dateOfBirth,
-          ssn: data.ssn,
-          email: data.email,
-          password: data.password,
+          firstName: signUpData.firstName,
+          lastName: signUpData.lastName,
+          address1: signUpData.address1,
+          city: signUpData.city,
+          state: signUpData.state,
+          postalCode: signUpData.postalCode,
+          dateOfBirth: signUpData.dateOfBirth,
+          ssn: signUpData.ssn,
+          email: signUpData.email,
+          password: signUpData.password,
         };
 
         try {
