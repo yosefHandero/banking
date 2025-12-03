@@ -29,13 +29,13 @@ export default function BankAccountPage() {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 

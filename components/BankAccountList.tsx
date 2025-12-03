@@ -20,7 +20,7 @@ export default function BankAccountList({
           title="My Bank Accounts"
           subtext="Manage your connected bank accounts"
         />
-        <ConnectBankButton userId={userId} />
+        <ConnectBankButton userId={userId} variant="primary" />
       </div>
 
       {accounts.length === 0 ? (
@@ -28,7 +28,6 @@ export default function BankAccountList({
           <p className="text-16 font-medium text-gray-300">
             No bank accounts connected yet
           </p>
-          <ConnectBankButton userId={userId} variant="primary" />
         </div>
       ) : (
         <div className="flex flex-col gap-4">

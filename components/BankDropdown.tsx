@@ -28,9 +28,9 @@ export default function BankDropdown({
         onChange={(e) => onChange?.(e.target.value)}
         className="input-class"
       >
-        <option value="">{label}</option>
+        <option value="" className="bg-[#001122] text-white">{label}</option>
         {filteredAccounts.map((account) => (
-          <option key={account.id} value={account.id}>
+          <option key={account.id} value={account.id} className="bg-[#001122] text-white">
             {account.name} - {formatAmount(account.currentBalance)}
           </option>
         ))}

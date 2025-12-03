@@ -19,20 +19,27 @@ export const sidebarLinks = [
     route: "/payment-transfer",
     label: "Transfer Funds",
   },
+  {
+    imgURL: "/icons/monitor.svg",
+    route: "/ai-insights",
+    label: "AI Insights",
+  },
 ];
 
+// ⚠️ SECURITY WARNING: Test data below should NOT be used in production
+// These are hardcoded test credentials for development/demo purposes only
+// In production, remove these or move to secure environment variables
+
 // good_user / good_password - Bank of America
-export const TEST_USER_ID = "6627ed3d00267aa6fa3e";
+// TODO: Remove hardcoded test data or move to environment variables
+export const TEST_USER_ID = process.env.NEXT_PUBLIC_TEST_USER_ID || "6627ed3d00267aa6fa3e";
 
 // custom_user -> Chase Bank
-// export const TEST_ACCESS_TOKEN =
-//   "access-sandbox-da44dac8-7d31-4f66-ab36-2238d63a3017";
-
-// custom_user -> Chase Bank
-export const TEST_ACCESS_TOKEN =
+export const TEST_ACCESS_TOKEN = process.env.NEXT_PUBLIC_TEST_ACCESS_TOKEN || 
   "access-sandbox-229476cf-25bc-46d2-9ed5-fba9df7a5d63";
 
-export const ITEMS = [
+// ⚠️ WARNING: Contains hardcoded access tokens - SECURITY RISK in production
+export const ITEMS = process.env.NODE_ENV === 'production' ? [] : [
   {
     id: "6624c02e00367128945e", // appwrite item Id
     accessToken: "access-sandbox-83fd9200-0165-4ef8-afde-65744b9d1548",
@@ -117,21 +124,39 @@ export const transactionCategoryStyles = {
     chipBackgroundColor: "bg-inherit",
   },
   Processing: {
-    borderColor: "border-[#F2F4F7]",
+    borderColor: "border-gray-400",
     backgroundColor: "bg-gray-500",
-    textColor: "text-[#344054]",
-    chipBackgroundColor: "bg-[#F2F4F7]",
+    textColor: "text-white",
+    chipBackgroundColor: "bg-gray-600",
   },
   Success: {
     borderColor: "border-[#12B76A]",
     backgroundColor: "bg-[#12B76A]",
-    textColor: "text-[#027A48]",
-    chipBackgroundColor: "bg-[#ECFDF3]",
+    textColor: "text-white",
+    chipBackgroundColor: "bg-[#12B76A]/20",
+  },
+  Entertainment: {
+    borderColor: "",
+    backgroundColor: "bg-blue-500",
+    textColor: "text-blue-400",
+    chipBackgroundColor: "bg-blue-500/20",
+  },
+  Groceries: {
+    borderColor: "",
+    backgroundColor: "bg-blue-500",
+    textColor: "text-blue-400",
+    chipBackgroundColor: "bg-blue-500/20",
+  },
+  Housing: {
+    borderColor: "",
+    backgroundColor: "bg-blue-500",
+    textColor: "text-blue-400",
+    chipBackgroundColor: "bg-blue-500/20",
   },
   default: {
     borderColor: "",
     backgroundColor: "bg-blue-500",
-    textColor: "text-blue-700",
-    chipBackgroundColor: "bg-inherit",
+    textColor: "text-blue-400",
+    chipBackgroundColor: "bg-blue-500/20",
   },
 };

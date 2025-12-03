@@ -18,13 +18,13 @@ export default function SettingsPage() {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const user = await getUserInfo(currentUser.$id);
       if (!user) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 

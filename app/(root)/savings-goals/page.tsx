@@ -47,13 +47,13 @@ export default function SavingsGoalsPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -95,13 +95,13 @@ export default function SavingsGoalsPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -121,13 +121,13 @@ export default function SavingsGoalsPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -142,7 +142,7 @@ export default function SavingsGoalsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-16 text-gray-600">Loading goals...</p>
+        <p className="text-16 text-gray-300">Loading goals...</p>
       </div>
     );
   }

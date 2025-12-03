@@ -4,54 +4,48 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
 import { getAccounts } from "@/lib/appwrite/account";
+import { useDemo } from "@/lib/demo/demoContext";
 import PaymentTransferForm from "@/components/PaymentTransferForm";
 import HeaderBox from "@/components/HeaderBox";
 import LoadingBar from "@/components/LoadingBar";
 import { Account } from "@/types";
-import { generateMockBankAccounts } from "@/lib/mock/bankData";
 
 export default function PaymentTransferPage() {
   const router = useRouter();
+  const { isDemoMode, demoUser, demoAccounts } = useDemo();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
+      // If in demo mode, use demo data
+      if (isDemoMode && demoUser) {
+        setAccounts(demoAccounts);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise, load real data
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const accountsData = await getAccounts(userInfo.userId);
-
-      if (accountsData.length === 0) {
-        const generatedAccounts = generateMockBankAccounts(userInfo.userId, 2);
-        const mockAccounts: Account[] = generatedAccounts.map(
-          (acc: any, index: number) => ({
-            ...acc,
-            id: `mock-${index + 1}`,
-            appwriteItemId: `mock-item-${index + 1}`,
-            sharableId: `mock-share-${index + 1}`,
-            userId: userInfo.userId,
-          })
-        );
-        setAccounts(mockAccounts);
-      } else {
-        setAccounts(accountsData);
-      }
+      setAccounts(accountsData);
       setLoading(false);
     }
 
     loadData();
-  }, [router]);
+  }, [router, isDemoMode, demoUser, demoAccounts]);
 
   if (loading) {
     return <LoadingBar />;

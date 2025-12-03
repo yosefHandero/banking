@@ -28,7 +28,7 @@ export default function MobileNav() {
                 height={20}
                 className={isActive ? 'brightness-[3] invert-0' : ''}
               />
-              <p className={`text-12 ${isActive ? 'text-white' : 'text-gray-700'}`}>
+              <p className={`text-12 ${isActive ? 'text-white' : 'text-gray-300'}`}>
                 {item.label}
               </p>
             </Link>

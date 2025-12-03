@@ -3,7 +3,8 @@
   "language": "en",
   "words": [
     "worktree",
-    "worktrees"
+    "worktrees",
+    "clearbit"
   ],
   "ignorePaths": [
     "node_modules",

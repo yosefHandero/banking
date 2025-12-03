@@ -54,41 +54,60 @@ export default function AuthForm({ type }: AuthFormProps) {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);
     try {
       if (type === "sign-in") {
-        const response = await signInAccount(data.email, data.password);
-        if (response) {
-          toast.success("Signed in successfully!");
-          router.push("/");
-        } else {
-          toast.error("Failed to sign in. Please check your credentials.");
+        try {
+          const response = await signInAccount(data.email, data.password);
+          if (response) {
+            toast.success("Signed in successfully!");
+            router.push("/");
+            router.refresh(); // Refresh to update auth state
+          }
+        } catch (signInError) {
+          const errorMessage = signInError instanceof Error 
+            ? signInError.message 
+            : "Failed to sign in. Please check your credentials.";
+          toast.error(errorMessage);
+          return; // Don't proceed if sign-in fails
         }
       } else {
-        const userData = {
+        const userData: SignUpFormData = {
           firstName: data.firstName!,
           lastName: data.lastName!,
-          address1: data.address1!,
-          city: data.city!,
-          state: data.state!,
-          postalCode: data.postalCode!,
-          dateOfBirth: data.dateOfBirth!,
-          ssn: data.ssn!,
+          address1: data.address1,
+          city: data.city,
+          state: data.state,
+          postalCode: data.postalCode,
+          dateOfBirth: data.dateOfBirth,
+          ssn: data.ssn,
           email: data.email,
           password: data.password,
         };
 
-        const newUser = await createUserAccount(userData);
-        if (newUser) {
-          toast.success("Account created successfully!");
-          router.push("/");
-        } else {
-          toast.error("Failed to create account.");
+        try {
+          const newUser = await createUserAccount(userData);
+          if (newUser) {
+            toast.success("Account created successfully!");
+            router.push("/");
+            router.refresh(); // Refresh to update auth state
+          } else {
+            toast.error("Failed to create account.");
+          }
+        } catch (signUpError) {
+          const errorMessage = signUpError instanceof Error 
+            ? signUpError.message 
+            : "Failed to create account.";
+          toast.error(errorMessage);
+          return;
         }
       }
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -103,11 +122,11 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("firstName" as any)}
+              {...register("firstName")}
             />
-            {(errors as any).firstName && (
+            {errors.firstName && (
               <p className="form-message">
-                {(errors as any).firstName.message as string}
+                {errors.firstName.message}
               </p>
             )}
           </div>
@@ -116,11 +135,11 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("lastName" as any)}
+              {...register("lastName")}
             />
-            {(errors as any).lastName && (
+            {errors.lastName && (
               <p className="form-message">
-                {(errors as any).lastName.message as string}
+                {errors.lastName.message}
               </p>
             )}
           </div>
@@ -131,7 +150,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         <label className="form-label">Email</label>
         <input type="email" className="input-class" {...register("email")} />
         {errors.email && (
-          <p className="form-message">{errors.email.message as string}</p>
+          <p className="form-message">{errors.email.message}</p>
         )}
       </div>
 
@@ -143,7 +162,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           {...register("password")}
         />
         {errors.password && (
-          <p className="form-message">{errors.password.message as string}</p>
+          <p className="form-message">{errors.password.message}</p>
         )}
       </div>
 
@@ -154,7 +173,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("address1" as any)}
+              {...register("address1")}
             />
           </div>
           <div className="form-item">
@@ -162,7 +181,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("city" as any)}
+              {...register("city")}
             />
           </div>
           <div className="form-item">
@@ -170,7 +189,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("state" as any)}
+              {...register("state")}
             />
           </div>
           <div className="form-item">
@@ -178,7 +197,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             <input
               type="text"
               className="input-class"
-              {...register("postalCode" as any)}
+              {...register("postalCode")}
             />
           </div>
         </>
@@ -188,7 +207,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         {isLoading ? "Loading..." : type === "sign-up" ? "Sign Up" : "Sign In"}
       </Button>
 
-      <p className="text-center text-14 text-gray-600">
+      <p className="text-center text-14 text-gray-300">
         {type === "sign-up" ? (
           <>
             Already have an account?{" "}

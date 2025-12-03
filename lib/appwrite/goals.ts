@@ -42,7 +42,33 @@ export async function createSavingsGoal(goalData: {
     );
 
     return goal;
-  } catch (error) {
+  } catch (error: any) {
+    const errorMsg = error?.message || '';
+    
+    if (errorMsg.includes('Unknown attribute')) {
+      const missingAttr = errorMsg.match(/Unknown attribute: "([^"]+)"/)?.[1] || 'unknown';
+      throw new Error(
+        `Schema Error: The attribute "${missingAttr}" is missing from your Appwrite SAVINGS_GOALS collection.\n\n` +
+        `Required attributes:\n` +
+        `- goalId (Integer)\n` +
+        `- userId (Integer)\n` +
+        `- goalName (String)\n` +
+        `- targetAmount (Double)\n` +
+        `- currentAmount (Double)\n` +
+        `- startDate (DateTime)\n` +
+        `- endDate (DateTime)\n\n` +
+        `Please add the missing attribute "${missingAttr}" to your SAVINGS_GOALS collection.\n` +
+        `See README_SCHEMA.md for complete schema documentation.`
+      );
+    }
+    
+    if (errorMsg.includes('Collection') || errorMsg.includes('not found')) {
+      throw new Error(
+        `Collection Error: The SAVINGS_GOALS collection (ID: ${COLLECTIONS.SAVINGS_GOALS}) was not found.\n\n` +
+        `Please verify your Appwrite configuration in .env.local.`
+      );
+    }
+    
     throw error;
   }
 }

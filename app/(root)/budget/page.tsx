@@ -60,13 +60,13 @@ export default function BudgetPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -115,13 +115,13 @@ export default function BudgetPage() {
     try {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
       const userInfo = await getUserInfo(currentUser.$id);
       if (!userInfo) {
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -136,7 +136,7 @@ export default function BudgetPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-16 text-gray-600">Loading budgets...</p>
+        <p className="text-16 text-gray-300">Loading budgets...</p>
       </div>
     );
   }

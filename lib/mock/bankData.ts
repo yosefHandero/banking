@@ -34,7 +34,7 @@ export function generateMockBankAccount(userId: string, bankIndex: number = 0): 
   const mask = String((seed % 9000) + 1000); // 4-digit mask
 
   return {
-    name: `${bank.name} ${subtype.charAt(0).toUpperCase() + subtype.slice(1)}`,
+    name: `${subtype.charAt(0).toUpperCase() + subtype.slice(1)} ••••${mask}`, // Match format from real accounts
     officialName: `${bank.name} - ${subtype}`,
     mask,
     type,
@@ -45,7 +45,9 @@ export function generateMockBankAccount(userId: string, bankIndex: number = 0): 
       : Math.round(balance * 100) / 100,
     institutionId: bank.id,
     userId,
-  };
+    // Add institutionName for logo lookup
+    institutionName: bank.name,
+  } as Omit<Account, 'id' | 'appwriteItemId' | 'sharableId'> & { institutionName?: string };
 }
 
 export function generateMockBankAccounts(userId: string, count: number = 3): Omit<Account, 'id' | 'appwriteItemId' | 'sharableId'>[] {

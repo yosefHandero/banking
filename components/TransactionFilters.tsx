@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { format, startOfMonth, endOfMonth, subMonths, subDays } from "date-fns";
+import { format, startOfMonth, subMonths, subDays } from "date-fns";
 
 interface TransactionFiltersProps {
   onFilterChange: (filters: {
@@ -16,10 +16,10 @@ interface TransactionFiltersProps {
 export default function TransactionFilters({
   onFilterChange,
 }: TransactionFiltersProps) {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("All");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(null);
 
   const categories = [
     "All",
@@ -33,10 +33,21 @@ export default function TransactionFilters({
     "Other",
   ];
 
+  // Apply filters whenever category or dates change
+  useEffect(() => {
+    onFilterChange({
+      search: "", // No search input anymore
+      category: category === "All" ? "" : category,
+      dateFrom,
+      dateTo,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, dateFrom, dateTo]);
+
   const handleQuickFilter = (period: "week" | "month" | "3months" | "year") => {
     const today = new Date();
     let from = "";
-    let to = format(today, "yyyy-MM-dd");
+    const to = format(today, "yyyy-MM-dd");
 
     switch (period) {
       case "week":
@@ -55,90 +66,102 @@ export default function TransactionFilters({
 
     setDateFrom(from);
     setDateTo(to);
-    onFilterChange({ search, category, dateFrom: from, dateTo: to });
+    setActiveQuickFilter(period);
+    // Filters will be applied automatically via useEffect
   };
 
-  const handleApplyFilters = () => {
-    onFilterChange({
-      search,
-      category: category === "All" ? "" : category,
-      dateFrom,
-      dateTo,
-    });
+  const handleCategoryChange = (newCategory: string) => {
+    setCategory(newCategory);
+    // Filters will be applied automatically via useEffect
+  };
+
+  const handleClearFilters = () => {
+    setCategory("All");
+    setDateFrom("");
+    setDateTo("");
+    setActiveQuickFilter(null);
+    // Filters will be applied automatically via useEffect
   };
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-[#001122] rounded-lg shadow-form border border-gray-700">
-      <div className="flex flex-col gap-4 md:flex-row">
-        <input
-          type="text"
-          placeholder="Search transactions..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input-class flex-1"
-        />
+      {/* Category Filter Section */}
+      <div className="flex flex-col gap-2">
+        <label htmlFor="category-filter" className="text-14 text-gray-300 font-medium">
+          Category
+        </label>
         <select
+          id="category-filter"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => handleCategoryChange(e.target.value)}
           className="input-class"
         >
           {categories.map((cat) => (
-            <option key={cat} value={cat}>
+            <option key={cat} value={cat} className="bg-[#001122] text-white">
               {cat}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="flex flex-col gap-2 md:flex-row">
-        <input
-          type="date"
-          placeholder="From"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="input-class"
-        />
-        <input
-          type="date"
-          placeholder="To"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="input-class"
-        />
-        <Button onClick={handleApplyFilters} className="form-btn">
-          Apply Filters
-        </Button>
-      </div>
-
-      <div className="flex gap-2 flex-wrap">
-        <Button
-          variant="ghost"
-          onClick={() => handleQuickFilter("week")}
-          className="text-12"
-        >
-          This Week
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => handleQuickFilter("month")}
-          className="text-12"
-        >
-          This Month
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => handleQuickFilter("3months")}
-          className="text-12"
-        >
-          Last 3 Months
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => handleQuickFilter("year")}
-          className="text-12"
-        >
-          This Year
-        </Button>
+      {/* Quick Filters Section */}
+      <div className="flex flex-col gap-2">
+        <label className="text-14 text-gray-300 font-medium">Quick Filters</label>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="ghost"
+            onClick={() => handleQuickFilter("week")}
+            className={`text-12 transition-colors ${
+              activeQuickFilter === "week"
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            This Week
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => handleQuickFilter("month")}
+            className={`text-12 transition-colors ${
+              activeQuickFilter === "month"
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            This Month
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => handleQuickFilter("3months")}
+            className={`text-12 transition-colors ${
+              activeQuickFilter === "3months"
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            Last 3 Months
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => handleQuickFilter("year")}
+            className={`text-12 transition-colors ${
+              activeQuickFilter === "year"
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            This Year
+          </Button>
+          {(category !== "All" || dateFrom || dateTo) && (
+            <Button
+              variant="ghost"
+              onClick={handleClearFilters}
+              className="text-12 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors"
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

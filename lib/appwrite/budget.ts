@@ -66,6 +66,10 @@ export async function getBudgets(userId: string, year?: number, month?: number):
       [Query.equal('userId', userIdInt)]
     );
 
+    // Get transactions to calculate spending
+    const { getTransactions } = await import('./transaction');
+    const transactions = await getTransactions(userId);
+
     return budgets.documents
       .map((doc: any): Budget | null => {
         const startDate = doc.startPeriod ? new Date(doc.startPeriod) : new Date();
@@ -77,14 +81,33 @@ export async function getBudgets(userId: string, year?: number, month?: number):
         if (month !== undefined && docMonth !== month) return null;
 
         const period: 'monthly' | 'yearly' = (endDate.getTime() - startDate.getTime()) < 32 * 24 * 60 * 60 * 1000 ? 'monthly' : 'yearly';
+        
+        const budgetCategory = doc.categories || doc.name || '';
+        
+        // Calculate current spending from transactions in the budget period
+        const currentSpending = transactions
+          .filter((t) => {
+            const transactionDate = new Date(t.date);
+            // Only count withdrawals (negative amounts or type 'withdrawal')
+            const isWithdrawal = t.amount < 0 || t.type === 'withdrawal';
+            // Match category
+            const categoryMatch = t.category === budgetCategory || 
+                                 t.category?.toLowerCase().includes(budgetCategory.toLowerCase()) ||
+                                 budgetCategory.toLowerCase().includes(t.category?.toLowerCase() || '');
+            // Check if transaction is within budget period
+            const inPeriod = transactionDate >= startDate && transactionDate <= endDate;
+            
+            return isWithdrawal && categoryMatch && inPeriod;
+          })
+          .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
         return {
           $id: doc.$id,
           userId: userId,
-          category: doc.categories || doc.name || '',
+          category: budgetCategory,
           limit: doc.totalAmount || 0,
           period: period,
-          currentSpending: 0,
+          currentSpending: currentSpending,
           month: docMonth,
           year: docYear,
         };

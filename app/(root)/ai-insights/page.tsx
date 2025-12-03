@@ -1,25 +1,55 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { getCurrentUser, getUserInfo } from "@/lib/appwrite/user";
+import { useDemo } from "@/lib/demo/demoContext";
 import HeaderBox from "@/components/HeaderBox";
 import AISuggestionCard from "@/components/AISuggestionCard";
 import AIChat from "@/components/AIChat";
 import LoadingBar from "@/components/LoadingBar";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AIInsightsPage() {
   const router = useRouter();
+  const { isDemoMode, demoUser } = useDemo();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
   const isLoadingRef = useRef(false);
 
+  // Load demo suggestions on mount if in demo mode
+  useEffect(() => {
+    if (isDemoMode) {
+      // Set demo AI suggestions
+      setSuggestions([
+        "Based on your spending patterns, you're spending 15% more on dining out this month. Consider meal prepping to save around $200 monthly.",
+        "Your emergency fund is at 62% of your target. You're on track to reach your goal in 8 months if you maintain current savings rate.",
+        "You have 3 credit card accounts. Consider consolidating to reduce annual fees and simplify your finances.",
+        "Your monthly subscription services total $89. Review and cancel unused subscriptions to save up to $1,068 annually.",
+        "Your spending on groceries has increased 20% this month. Consider bulk buying and using coupons to reduce costs.",
+      ]);
+    }
+  }, [isDemoMode]);
+
   const loadSuggestions = async () => {
     // Prevent multiple simultaneous requests
     if (isLoadingRef.current) {
+      return;
+    }
+
+    // If in demo mode, show demo suggestions
+    if (isDemoMode) {
+      toast.info("Demo Mode: Showing sample AI insights");
+      setSuggestions([
+        "Based on your spending patterns, you're spending 15% more on dining out this month. Consider meal prepping to save around $200 monthly.",
+        "Your emergency fund is at 62% of your target. You're on track to reach your goal in 8 months if you maintain current savings rate.",
+        "You have 3 credit card accounts. Consider consolidating to reduce annual fees and simplify your finances.",
+        "Your monthly subscription services total $89. Review and cancel unused subscriptions to save up to $1,068 annually.",
+        "Your spending on groceries has increased 20% this month. Consider bulk buying and using coupons to reduce costs.",
+      ]);
       return;
     }
 
@@ -37,7 +67,7 @@ export default function AIInsightsPage() {
         if (currentRequestId !== requestIdRef.current) {
           return;
         }
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 
@@ -47,7 +77,7 @@ export default function AIInsightsPage() {
         if (currentRequestId !== requestIdRef.current) {
           return;
         }
-        router.push("/sign-in");
+        router.push("/");
         return;
       }
 

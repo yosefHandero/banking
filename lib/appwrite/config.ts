@@ -1,17 +1,22 @@
 import { Client, Account, Databases, ID, Query } from 'appwrite';
+import { validateEnvVar } from '@/lib/utils/env';
+
+const APPWRITE_URL = validateEnvVar('NEXT_PUBLIC_APPWRITE_URL', process.env.NEXT_PUBLIC_APPWRITE_URL);
+const APPWRITE_PROJECT_ID = validateEnvVar('NEXT_PUBLIC_APPWRITE_PROJECT_ID', process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
 
 export const client = new Client();
 
 client
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_URL!)
-  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+  .setEndpoint(APPWRITE_URL)
+  .setProject(APPWRITE_PROJECT_ID);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
 
 export { ID, Query };
 
-export const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+export const DATABASE_ID = validateEnvVar('NEXT_PUBLIC_APPWRITE_DATABASE_ID', process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID);
+
 export const COLLECTIONS = {
   USERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID || process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || '66edc2d6002502837b8f',
   ACCOUNTS: process.env.NEXT_PUBLIC_APPWRITE_ACCOUNTS_COLLECTION_ID || '691e308b003297049b96',

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import BankDropdown from "./BankDropdown";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useDemo } from "@/lib/demo/demoContext";
 
 const transferSchema = z.object({
   fromAccountId: z.string().min(1, "Source account is required"),
@@ -25,6 +26,7 @@ export default function PaymentTransferForm({
   accounts,
 }: PaymentTransferFormProps) {
   const router = useRouter();
+  const { isDemoMode } = useDemo();
   const [isTransferring, setIsTransferring] = useState(false);
   const {
     register,
@@ -49,6 +51,19 @@ export default function PaymentTransferForm({
     const fromAccount = accounts.find((acc) => acc.id === data.fromAccountId);
     if (fromAccount && data.amount > fromAccount.availableBalance) {
       toast.error("Insufficient funds");
+      return;
+    }
+
+    // In demo mode, simulate transfer without writing to database
+    if (isDemoMode) {
+      setIsTransferring(true);
+      // Simulate processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast.success(
+        `Demo Mode: Transfer of $${data.amount.toFixed(2)} simulated successfully! (No actual transfer occurred)`
+      );
+      reset();
+      setIsTransferring(false);
       return;
     }
 
